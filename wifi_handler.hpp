@@ -4,14 +4,14 @@
 #include <Preferences.h>
 
 class WifiHandler {
-    private:
-    Preferences preferences;
-
-    public:
+  public:
     WifiHandler();
     bool checkConnection();
     bool restoreConfig();
     void serveSmartConfig();
+
+  private:
+    Preferences preferences;
 };
 
 #endif // WIFI_HANDLER_HPP

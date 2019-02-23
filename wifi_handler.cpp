@@ -1,4 +1,3 @@
-#include <esp32-hal-log.h>
 #include <M5Stack.h>
 #include <Preferences.h>
 #include <WiFi.h>
@@ -28,7 +27,6 @@ bool WifiHandler::restoreConfig() {
   String wifi_ssid = preferences.getString("WIFI_SSID");
   String wifi_password = preferences.getString("WIFI_PASS");
   preferences.end();
-  log_i("WIFI-SSID: %s", wifi_ssid.c_str());
   M5.Lcd.printf("WIFI-SSID: %s\n", wifi_ssid.c_str());
   WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
   return wifi_ssid.length() > 0;
