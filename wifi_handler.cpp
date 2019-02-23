@@ -38,13 +38,13 @@ void WifiHandler::serveSmartConfig() {
   WiFi.mode(WIFI_AP_STA);
   WiFi.beginSmartConfig();
   M5.Lcd.println("Waiting for SmartConfig.");
-  while (!WiFi.smartConfigDone()) {
+  while(!WiFi.smartConfigDone()) {
     delay(500);
-    Serial.print(".");
-    preferences.begin("wifi-config", false);
-    preferences.putString("WIFI_SSID", WiFi.SSID());
-    preferences.putString("WIFI_PASS", WiFi.psk());
-    preferences.end();
+    M5.Lcd.print(".");
   }
-  checkConnection();
+  while(!checkConnection()) {}
+  preferences.begin("wifi-config", false);
+  preferences.putString("WIFI_SSID", WiFi.SSID());
+  preferences.putString("WIFI_PASS", WiFi.psk());
+  preferences.end();
 }
