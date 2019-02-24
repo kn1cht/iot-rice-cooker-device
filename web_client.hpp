@@ -7,6 +7,7 @@ class WebClient {
   public:
     WebClient();
     String get_request(String path);
+    String put_request(String path, String data);
 
   private:
     WiFiClientSecure client;
