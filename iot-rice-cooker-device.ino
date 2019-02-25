@@ -111,18 +111,20 @@ void loop() {
 
       //open the rice cookers via BLE
       int i;
-      if(connected==false)pBLEScan->start(5, false);
-      if (doConnect == true) {
-        if (connectToServer())Serial.println("We are now connected to the BLE Server.");
-        else Serial.println("We have failed to connect to the server; there is nothin more we will do.");
-        doConnect = false;
+      while(connected==false){
+        pBLEScan->start(5, false);
+        if (doConnect == true) {
+          if (connectToServer())Serial.println("We are now connected to the BLE Server.");
+          else Serial.println("We have failed to connect to the server; there is nothin more we will do.");
+          doConnect = false;
+        }
+        Serial.printf("Delay 15sec.\n");
+        for(i=0;i<15;i++){
+          Serial.printf("%d\n",i+1);
+          delay(1000);
+        }
       }
-      Serial.printf("Delay 15sec.\n");
-      for(i=0;i<15;i++){
-        Serial.printf("%d\n",i+1);
-        delay(1000);
-      }
-      pClient->disconnect();
+        pClient->disconnect();
 
       res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active)));
       M5.Lcd.println(res);
