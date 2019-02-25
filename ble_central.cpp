@@ -1,10 +1,11 @@
 #include <M5Stack.h>
+#include <BLEDevice.h>
 #include "ble_central.hpp"
 
 BleCentral::BleCentral() {
   Serial.println("Starting Arduino BLE Client application...");
   BLEDevice::init("");
-  pBLEScan->setAdvertisedDeviceCallbacks(new BleCentral::MyAdvertisedDeviceCallbacks());
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
@@ -17,6 +18,10 @@ BleCentral::BleCentral() {
     }
   }
 }
+
+bool BleCentral::connected = false;
+
+bool BleCentral::doConnect = false;
 
 void BleCentral::connect() {
   //open the rice cookers via BLE
@@ -40,15 +45,15 @@ void BleCentral::connect() {
 }
 
 bool BleCentral::connectToServer() {
-    Serial.print("Forming a connection to ");
-    Serial.println(myDevice->getAddress().toString().c_str());
-    Serial.println(" - Created client");
+  Serial.print("Forming a connection to ");
+  Serial.println(myDevice->getAddress().toString().c_str());
+  Serial.println(" - Created client");
 
-    pClient->setClientCallbacks(new BleCentral::MyClientCallback());
+  pClient->setClientCallbacks(new MyClientCallback());
 
-    // Connect to the remove BLE Server.
-    pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
-    Serial.println(" - Connected to server");
+  // Connect to the remove BLE Server.
+  pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
+  Serial.println(" - Connected to server");
 
     // Obtain a reference to the service we are after in the remote BLE server.
     BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
@@ -70,7 +75,7 @@ bool BleCentral::connectToServer() {
     }
     Serial.println(" - Found our characteristic");
 
-    connected = true;
+  connected = true;
 }
 
 void BleCentral::MyClientCallback::onDisconnect(BLEClient* pclient) {
@@ -82,8 +87,7 @@ void BleCentral::MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice adver
   Serial.print("BLE Advertised Device found: ");
   Serial.println(advertisedDevice.toString().c_str());
   // We have found a device, let us now see if it contains the service we are looking for.
-  if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
-
+  if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(BLEUUID (serviceUUID))) {
     BLEDevice::getScan()->stop();
     myDevice = new BLEAdvertisedDevice(advertisedDevice);
     doConnect = true;
