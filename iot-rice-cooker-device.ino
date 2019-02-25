@@ -98,7 +98,7 @@ void loop() {
     if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()){
       state_active = false;
       M5.Lcd.println("Cooking complete");
-      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active ? "true": "false")));
+      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active)));
       M5.Lcd.println(res);
     }
   }
@@ -124,7 +124,7 @@ void loop() {
       }
       pClient->disconnect();
 
-      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active ? "true": "false")));
+      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active)));
       M5.Lcd.println(res);
     }
   }
