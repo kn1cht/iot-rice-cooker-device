@@ -84,17 +84,11 @@ void setup() {
 void loop() {
   int i;
   if(connected==false)pBLEScan->start(5, false);
-
   if (doConnect == true) {
-    if (connectToServer()) {
-      Serial.println("We are now connected to the BLE Server.");
-    }
-    else {
-      Serial.println("We have failed to connect to the server; there is nothin more we will do.");
-    }
+    if (connectToServer())Serial.println("We are now connected to the BLE Server.");
+    else Serial.println("We have failed to connect to the server; there is nothin more we will do.");
     doConnect = false;
   }
-
   Serial.printf("Delay 15sec.\n");
   for(i=0;i<15;i++){
     Serial.printf("%d\n",i+1);
