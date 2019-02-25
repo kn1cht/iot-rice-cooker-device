@@ -10,7 +10,7 @@ WifiHandler::WifiHandler() {
 
 bool WifiHandler::checkConnection() {
   M5.Lcd.print("Waiting for Wi-Fi connection");
-  for(int count = 0; count < 30; count++) {
+  for(int count = 0; count < 100; count++) {
     if (WiFi.status() == WL_CONNECTED) {
       M5.Lcd.println("\nConnected!");
       return true;
