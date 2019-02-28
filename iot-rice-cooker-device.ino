@@ -10,9 +10,9 @@ float state_weight = 20;
 
 //setting about BLE starts from here
 // The remote service we wish to connect to.
-static BLEUUID serviceUUID("12345678-9012-3456-7890-1234567890ff");
+static BLEUUID serviceUUID("12345678-9012-3456-7890-1234567890aa");
 // The characteristic of the remote service we are interested in.
-static BLEUUID    charUUID("12345678-9012-3456-7890-123456789011");
+static BLEUUID    charUUID("12345678-9012-3456-7890-123456789022");
 static boolean doConnect = false;
 static boolean connected = false;
 static BLERemoteCharacteristic* pRemoteCharacteristic;
@@ -63,6 +63,7 @@ bool connectToServer() {
     Serial.println(" - Found our characteristic");
 
     connected = true;
+    return true;
 }
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
@@ -148,11 +149,11 @@ void loop() {
         }
       }
       pRemoteCharacteristic->writeValue(01,true);
-      delay(1500);
+      delay(700);
       pRemoteCharacteristic->writeValue(03,true);
       delay(100);
       pRemoteCharacteristic->writeValue(02,true);
-      delay(1500);
+      delay(700);
       pRemoteCharacteristic->writeValue(03,true);
       delay(100);
       pRemoteCharacteristic->writeValue(00,true);
