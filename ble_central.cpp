@@ -34,11 +34,11 @@ void BleCentral::connect() {
     }
   }
   pRemoteCharacteristic->writeValue(01,true);
-  delay(1500);
+  delay(700);
   pRemoteCharacteristic->writeValue(03,true);
   delay(100);
   pRemoteCharacteristic->writeValue(02,true);
-  delay(1500);
+  delay(700);
   pRemoteCharacteristic->writeValue(03,true);
   delay(100);
   pRemoteCharacteristic->writeValue(00,true);
@@ -76,6 +76,7 @@ bool BleCentral::connectToServer() {
     Serial.println(" - Found our characteristic");
 
   connected = true;
+  return true;
 }
 
 void BleCentral::MyClientCallback::onDisconnect(BLEClient* pclient) {

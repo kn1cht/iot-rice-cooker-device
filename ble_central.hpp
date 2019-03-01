@@ -14,9 +14,9 @@ class BleCentral {
     };
     class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
         // The remote service we wish to connect to.
-        const char* serviceUUID = "12345678-9012-3456-7890-1234567890ff";
+        const char* serviceUUID = "12345678-9012-3456-7890-1234567890aa";
         // The characteristic of the remote service we are interested in.
-        const char* charUUID = "12345678-9012-3456-7890-123456789011";
+        const char* charUUID = "12345678-9012-3456-7890-123456789022";
         // Called for each advertising BLE server.
         void onResult(BLEAdvertisedDevice advertisedDevice);
     };
