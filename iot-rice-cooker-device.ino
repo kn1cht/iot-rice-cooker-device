@@ -3,10 +3,17 @@
 #include "wifi_handler.hpp"
 #include "ble_central.hpp"
 
+const uint8_t WATER_SENSOR_1_PIN = 5;
+
+struct State{
+  bool active = false;
+  bool water1 = true;
+  double weight = 20;
+};
+
+State state;
 WebClient* client;
 BleCentral* ble;
-bool state_active = false;
-float state_weight = 20;
 
 void setup() {
   M5.begin(); // setup serial, etc.
@@ -14,13 +21,17 @@ void setup() {
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
+  pinMode(WATER_SENSOR_1_PIN, INPUT);
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
   ble = new BleCentral();
 }
 
-String makeJsonOne(String key, String value) {
-  return String("{\"") + key + String("\": \"") + value + String("\"}");
+String sendPutRequest(String property, String value) {
+  return client->put_request(
+    "/api/cookers/0/" + property,
+    String("{\"") + property + String("\": \"") + value + String("\"}")
+  );
 }
 
 void loop() {
@@ -28,26 +39,30 @@ void loop() {
   delay(10); // for button pressing
   M5.Lcd.clear();
   M5.Lcd.setCursor(0,20);
-  String res = client->put_request("/api/cookers/0/weight", makeJsonOne("weight", String(state_weight)));
+
+  state.weight = 20; // TODO: load cell
+  state.water1 = digitalRead(WATER_SENSOR_1_PIN);
+
+  String res = sendPutRequest("weight", String(state.weight));
   M5.Lcd.println(res);
 
-  if(state_active) {
+  if(state.active) {
     M5.Lcd.println("Cooking In Progress!");
     if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()){
-      state_active = false;
+      state.active = false;
       M5.Lcd.println("Cooking complete");
-      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active)));
+      res = sendPutRequest("active", String(state.active));
       M5.Lcd.println(res);
     }
   }
   else {
     int amount = client->get_request("/api/cookers/0/amount").toInt();
     M5.Lcd.println(amount);
-    if(amount > 0 && state_weight > -30 && state_weight < 30) {
-      state_active = true;
+    if(amount > 0 && state.weight > -30 && state.weight < 30) {
+      state.active = true;
       M5.Lcd.println("Start cooking");
       ble->open();
-      res = client->put_request("/api/cookers/0/active", makeJsonOne("active", String(state_active)));
+      res = sendPutRequest("active", String(state.active));
       M5.Lcd.println(res);
     }
   }
