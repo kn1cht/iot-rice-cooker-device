@@ -1,17 +1,33 @@
 #include <M5Stack.h>
+#include <HX711.h>
 #include "web_client.hpp"
 #include "wifi_handler.hpp"
 #include "ble_central.hpp"
 
-const uint8_t WATER_SENSOR_1_PIN = 5;
+enum Pin : uint8_t {
+  /* sensors */
+  loadCellDout = 22,
+  loadCellSck  = 23,
+  waterSensor1 = 2,
+  waterSensor2 = 5,
+  /* actuators */
+  lidWireMotor1       = 1,
+  lidWireMotor2       = 3,
+  riceWashingMotor    = 16,
+  riceWashingRodServo = 17,
+  waterDeliveryPump   = 18,
+  waterRodServo       = 19,
+  waterSuctionPump    = 21,
+};
 
 struct State{
-  bool active = false;
-  bool water1 = true;
+  bool active   = false;
+  bool water1   = true;
   double weight = 20;
 };
 
 State state;
+HX711 scale;
 WebClient* client;
 BleCentral* lidBle;
 BleCentral* buttonBle;
@@ -22,11 +38,17 @@ void setup() {
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
-  pinMode(WATER_SENSOR_1_PIN, INPUT);
+  /*** Sensors and Actuators ***/
+  pinMode(Pin::waterSensor1, INPUT);
+  pinMode(Pin::waterSensor2, INPUT);
+  scale.begin(Pin::loadCellDout, Pin::loadCellSck);
+  scale.tare(10); // set offset
+  scale.set_scale(103.5f); // set unit scale
+  /*** Wi-Fi and BLE Initializing ***/
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
-  lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
-  buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
+  //lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
+  //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
 }
 
 String sendPutRequest(String property, String value) {
@@ -41,8 +63,8 @@ void loop() {
   delay(10); // for button pressing
   M5.Lcd.clear(); M5.Lcd.setCursor(0,20);
 
-  state.weight = 20; // TODO: load cell
-  state.water1 = digitalRead(WATER_SENSOR_1_PIN);
+  state.weight = scale.get_units(10); // [g]
+  state.water1 = digitalRead(Pin::waterSensor1); // 0: water shortage alert
 
   String res = sendPutRequest("weight", String(state.weight));
   M5.Lcd.println(res);
@@ -62,9 +84,8 @@ void loop() {
     if(amount > 0 && state.weight > -30 && state.weight < 30) {
       state.active = true;
       M5.Lcd.println("Start cooking");
-      lidBle->open();
-      delay(500); // TODO:temp
-      buttonBle->open();
+      //lidBle->open(); // TODO:外す
+      //buttonBle->open(); // TODO:外す
       res = sendPutRequest("active", String(state.active));
       M5.Lcd.println(res);
     }
