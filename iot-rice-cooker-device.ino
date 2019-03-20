@@ -7,19 +7,19 @@
 
 enum Pin : uint8_t {
   /* sensors */
-  loadCellDout = 23,
-  loadCellSck  = 24,
-  waterSensor1 = 2,
-  waterSensor2 = 5,
+  LoadCellDout = 23,
+  LoadCellSck  = 24,
+  WaterSensor1 = 2,
+  WaterSensor2 = 5,
   /* actuators */
-  lidWireMotor1       = 1,
-  lidWireMotor2       = 3,
-  riceDeliveryServo   = 16,
-  riceWashingMotor    = 17,
-  riceWashingRodServo = 18,
-  waterDeliveryPump   = 19,
-  waterRodServo       = 21,
-  waterSuctionPump    = 22,
+  LidWireMotor1       = 1,
+  LidWireMotor2       = 3,
+  RiceDeliveryServo   = 16,
+  RiceWashingMotor    = 17,
+  RiceWashingRodServo = 18,
+  WaterDeliveryPump   = 19,
+  WaterRodServo       = 21,
+  WaterSuctionPump    = 22,
 };
 
 struct State{
@@ -44,14 +44,14 @@ void setup() {
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
   /*** Sensors and Actuators ***/
-  pinMode(Pin::waterSensor1, INPUT);
-  pinMode(Pin::waterSensor2, INPUT);
-  scale.begin(Pin::loadCellDout, Pin::loadCellSck);
+  pinMode(Pin::WaterSensor1, INPUT);
+  pinMode(Pin::WaterSensor2, INPUT);
+  scale.begin(Pin::LoadCellDout, Pin::LoadCellSck);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
-	riceDeliveryServo.attach(Pin::riceDeliveryServo, 2656, 10000); // TODO: 調整
-	riceWashingRodServo.attach(Pin::riceWashingRodServo, 2656, 10000); // TODO: 調整
-	waterRodServo.attach(Pin::waterRodServo, 2656, 10000); // TODO: 調整
+	riceDeliveryServo.attach(Pin::RiceDeliveryServo, 2656, 10000); // TODO: 調整
+	riceWashingRodServo.attach(Pin::RiceWashingRodServo, 2656, 10000); // TODO: 調整
+	waterRodServo.attach(Pin::WaterRodServo, 2656, 10000); // TODO: 調整
   for(int c = 0; c < 100; c++) { // return to home position within 3 seconds
     riceDeliveryServo.write(0);
     riceWashingRodServo.write(90);
@@ -85,7 +85,7 @@ void loop() {
   M5.Lcd.clear(); M5.Lcd.setCursor(0,20);
 
   state.weight = scale.get_units(10); // [g]
-  state.water1 = digitalRead(Pin::waterSensor1); // 0: water shortage alert
+  state.water1 = digitalRead(Pin::WaterSensor1); // 0: water shortage alert
 
   String res = sendPutRequest("weight", String(state.weight));
   M5.Lcd.println("weight: " + String(state.weight));
