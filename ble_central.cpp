@@ -5,7 +5,8 @@ BleCentral::BleCentral(std::string _serviceUUID, std::string _charUUID) {
   serviceUUID = BLEUUID(_serviceUUID);
   charUUID = BLEUUID(_charUUID);
 
-  M5.Lcd.println("Starting Arduino BLE Client application...");
+  M5.Lcd.clear(); M5.Lcd.setCursor(0,20);
+  M5.Lcd.println("Starting BLE Central Client...");
   BLEDevice::init("");
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(serviceUUID, doConnect));
   pBLEScan->setInterval(1349);

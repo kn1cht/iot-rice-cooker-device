@@ -13,7 +13,8 @@ struct State{
 
 State state;
 WebClient* client;
-BleCentral* ble;
+BleCentral* lidBle;
+BleCentral* buttonBle;
 
 void setup() {
   M5.begin(); // setup serial, etc.
@@ -24,7 +25,8 @@ void setup() {
   pinMode(WATER_SENSOR_1_PIN, INPUT);
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
-  ble = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
+  lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
+  buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
 }
 
 String sendPutRequest(String property, String value) {
@@ -37,8 +39,7 @@ String sendPutRequest(String property, String value) {
 void loop() {
   M5.update();
   delay(10); // for button pressing
-  M5.Lcd.clear();
-  M5.Lcd.setCursor(0,20);
+  M5.Lcd.clear(); M5.Lcd.setCursor(0,20);
 
   state.weight = 20; // TODO: load cell
   state.water1 = digitalRead(WATER_SENSOR_1_PIN);
@@ -61,7 +62,9 @@ void loop() {
     if(amount > 0 && state.weight > -30 && state.weight < 30) {
       state.active = true;
       M5.Lcd.println("Start cooking");
-      ble->open();
+      lidBle->open();
+      delay(500); // TODO:temp
+      buttonBle->open();
       res = sendPutRequest("active", String(state.active));
       M5.Lcd.println(res);
     }
