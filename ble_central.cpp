@@ -1,14 +1,13 @@
 #include <M5Stack.h>
 #include "ble_central.hpp"
 
-bool BleCentral::connected = false;
+BleCentral::BleCentral(std::string _serviceUUID, std::string _charUUID) {
+  serviceUUID = BLEUUID(_serviceUUID);
+  charUUID = BLEUUID(_charUUID);
 
-bool BleCentral::doConnect = false;
-
-BleCentral::BleCentral() {
-  Serial.println("Starting Arduino BLE Client application...");
+  M5.Lcd.println("Starting Arduino BLE Client application...");
   BLEDevice::init("");
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(serviceUUID, doConnect));
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
@@ -28,28 +27,28 @@ void BleCentral::openConnection() {
   while(connected == false) {
     pBLEScan->start(5, false);
     if(doConnect == true) {
-      Serial.print("Forming a connection to ");
-      Serial.println(myDevice->getAddress().toString().c_str());
-      pClient->setClientCallbacks(new MyClientCallback());
+      M5.Lcd.print("Forming a connection to ");
+      M5.Lcd.println(myDevice->getAddress().toString().c_str());
+      pClient->setClientCallbacks(new MyClientCallback(connected));
       pClient->connect(myDevice);
-      Serial.println("Connected to server");
+      M5.Lcd.println("Connected to server");
 
       BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
       if(pRemoteService == nullptr) {
-        Serial.print("Failed to find our service UUID: ");
-        Serial.println(serviceUUID.toString().c_str());
+        M5.Lcd.print("Failed to find our service UUID: ");
+        M5.Lcd.println(serviceUUID.toString().c_str());
         pClient->disconnect();
       }
-      Serial.println("Found our service");
+      M5.Lcd.println("Found our service");
 
       pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
       if(pRemoteCharacteristic == nullptr) {
-        Serial.print("Failed to find our characteristic UUID: ");
-        Serial.println(charUUID.toString().c_str());
+        M5.Lcd.print("Failed to find our characteristic UUID: ");
+        M5.Lcd.println(charUUID.toString().c_str());
         pClient->disconnect();
       }
       else {
-        Serial.println("We are now connected to the BLE Server.");
+        M5.Lcd.println("We are now connected to the BLE Server.");
         connected = true;
       }
       doConnect = false;
@@ -57,12 +56,18 @@ void BleCentral::openConnection() {
   }
 }
 
-void BleCentral::MyClientCallback::onDisconnect(BLEClient* pclient) {
+MyClientCallback::MyClientCallback(bool& _connected):
+connected(_connected){}
+
+void MyClientCallback::onDisconnect(BLEClient* pclient) {
   connected = false;
-  Serial.println("Disconnected");
+  M5.Lcd.println("Disconnected");
 }
 
-void BleCentral::MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice) {
+MyAdvertisedDeviceCallbacks::MyAdvertisedDeviceCallbacks(BLEUUID& _serviceUUID, bool& _doConnect):
+serviceUUID(_serviceUUID), doConnect(_doConnect) {}
+
+void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice) {
   Serial.print("BLE Advertised Device found: ");
   Serial.println(advertisedDevice.toString().c_str());
 #ifdef DEBUG

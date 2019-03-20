@@ -24,7 +24,7 @@ void setup() {
   pinMode(WATER_SENSOR_1_PIN, INPUT);
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
-  ble = new BleCentral();
+  ble = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
 }
 
 String sendPutRequest(String property, String value) {
