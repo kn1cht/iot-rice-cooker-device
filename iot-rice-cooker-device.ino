@@ -1,23 +1,25 @@
-#include <M5Stack.h>
+#include <ESP32Servo.h>
 #include <HX711.h>
+#include <M5Stack.h>
 #include "web_client.hpp"
 #include "wifi_handler.hpp"
 #include "ble_central.hpp"
 
 enum Pin : uint8_t {
   /* sensors */
-  loadCellDout = 22,
-  loadCellSck  = 23,
+  loadCellDout = 23,
+  loadCellSck  = 24,
   waterSensor1 = 2,
   waterSensor2 = 5,
   /* actuators */
   lidWireMotor1       = 1,
   lidWireMotor2       = 3,
-  riceWashingMotor    = 16,
-  riceWashingRodServo = 17,
-  waterDeliveryPump   = 18,
-  waterRodServo       = 19,
-  waterSuctionPump    = 21,
+  riceDeliveryServo   = 16,
+  riceWashingMotor    = 17,
+  riceWashingRodServo = 18,
+  waterDeliveryPump   = 19,
+  waterRodServo       = 21,
+  waterSuctionPump    = 22,
 };
 
 struct State{
@@ -28,6 +30,9 @@ struct State{
 
 State state;
 HX711 scale;
+Servo riceDeliveryServo;
+Servo riceWashingRodServo;
+Servo waterRodServo;
 WebClient* client;
 BleCentral* lidBle;
 BleCentral* buttonBle;
@@ -44,6 +49,15 @@ void setup() {
   scale.begin(Pin::loadCellDout, Pin::loadCellSck);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
+	riceDeliveryServo.attach(Pin::riceDeliveryServo, 2656, 10000); // TODO: 調整
+	riceWashingRodServo.attach(Pin::riceWashingRodServo, 2656, 10000); // TODO: 調整
+	waterRodServo.attach(Pin::waterRodServo, 2656, 10000); // TODO: 調整
+  for(int c = 0; c < 100; c++) { // return to home position within 3 seconds
+    riceDeliveryServo.write(0);
+    riceWashingRodServo.write(90);
+    waterRodServo.write(90);
+    delay(30);
+  }
   /*** Wi-Fi and BLE Initializing ***/
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
@@ -58,6 +72,13 @@ String sendPutRequest(String property, String value) {
   );
 }
 
+void sweepServo(Servo& servo, int from, int to, double speedDps = 50.0) {
+  for(double angle = from; angle <= to; angle += speedDps / 50) {
+    servo.write(round(angle));
+    delay(20);
+  }
+}
+
 void loop() {
   M5.update();
   delay(10); // for button pressing
@@ -67,7 +88,8 @@ void loop() {
   state.water1 = digitalRead(Pin::waterSensor1); // 0: water shortage alert
 
   String res = sendPutRequest("weight", String(state.weight));
-  M5.Lcd.println(res);
+  M5.Lcd.println("weight: " + String(state.weight));
+  M5.Lcd.println("water1: " + String(state.water1));
 
   if(state.active) {
     M5.Lcd.println("Cooking In Progress!");
@@ -85,6 +107,24 @@ void loop() {
       state.active = true;
       M5.Lcd.println("Start cooking");
       //lidBle->open(); // TODO:外す
+      delay(1000); //TODO: lidWireMotor
+      sweepServo(waterRodServo, 0, 90);
+      delay(1000); //TODO: waterDeliveryPump -> state.weight
+      sweepServo(waterRodServo, 90, 0);
+      for(int c = 0; c <= amount * 4; c++) {
+        sweepServo(riceDeliveryServo, 0, 180);
+        delay(500);
+        sweepServo(riceDeliveryServo, 180, 0);
+        delay(500);
+      }
+      sweepServo(riceWashingRodServo, 0, 90);
+      delay(1000); //TODO: riceWashingMotor
+      sweepServo(riceWashingRodServo, 90, 0);
+      sweepServo(waterRodServo, 0, 90);
+      delay(1000); //TODO: waterSuctionPump -> state.weight
+      delay(1000); //TODO: waterDeliveryPump -> state.weight
+      sweepServo(waterRodServo, 90, 0);
+      delay(1000); //TODO: lidWireMotor
       //buttonBle->open(); // TODO:外す
       res = sendPutRequest("active", String(state.active));
       M5.Lcd.println(res);
