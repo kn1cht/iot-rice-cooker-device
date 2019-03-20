@@ -28,11 +28,41 @@ struct State{
   double weight = 20;
 };
 
+class GearedMotor {
+  public:
+    void init(uint8_t _p1) {
+      p1 = _p1;
+      pinMode(p1, OUTPUT);
+    }
+    void init(uint8_t _p1, uint8_t _p2) {
+      p1 = _p1;
+      p2 = _p2;
+      pinMode(p1, OUTPUT);
+      pinMode(p2, OUTPUT);
+    }
+    void forward() { write(1, 0); }
+    void reverse() { write(0, 1); }
+    void stop() { write(0, 0); }
+  private:
+    uint8_t p1;
+    uint8_t p2;
+    void write(int v1, int v2) {
+      digitalWrite(p1, v1);
+      if(p2) digitalWrite(p2, v2);
+    }
+};
+
 State state;
 HX711 scale;
+
+GearedMotor lidWireMotor;
+GearedMotor riceWashingMotor;
+GearedMotor waterDeliveryPump;
+GearedMotor waterSuctionPump;
 Servo riceDeliveryServo;
 Servo riceWashingRodServo;
 Servo waterRodServo;
+
 WebClient* client;
 BleCentral* lidBle;
 BleCentral* buttonBle;
@@ -43,12 +73,17 @@ void setup() {
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
-  /*** Sensors and Actuators ***/
+  /*** Sensors ***/
   pinMode(Pin::WaterSensor1, INPUT);
   pinMode(Pin::WaterSensor2, INPUT);
   scale.begin(Pin::LoadCellDout, Pin::LoadCellSck);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
+  /*** Actuators ***/
+  lidWireMotor.init(Pin::LidWireMotor1, Pin::LidWireMotor2);
+  riceWashingMotor.init(Pin::RiceWashingMotor);
+  waterDeliveryPump.init(Pin::WaterDeliveryPump);
+  waterSuctionPump.init(Pin::WaterSuctionPump);
 	riceDeliveryServo.attach(Pin::RiceDeliveryServo, 2656, 10000); // TODO: 調整
 	riceWashingRodServo.attach(Pin::RiceWashingRodServo, 2656, 10000); // TODO: 調整
 	waterRodServo.attach(Pin::WaterRodServo, 2656, 10000); // TODO: 調整
@@ -105,11 +140,17 @@ void loop() {
     M5.Lcd.println(amount);
     if(amount > 0 && state.weight > -30 && state.weight < 30) {
       state.active = true;
+      res = sendPutRequest("active", String(state.active));
+      M5.Lcd.println(res);
       M5.Lcd.println("Start cooking");
       //lidBle->open(); // TODO:外す
-      delay(1000); //TODO: lidWireMotor
+      lidWireMotor.reverse();
+      delay(5000); // TODO: 調整
+      lidWireMotor.stop();
       sweepServo(waterRodServo, 0, 90);
-      delay(1000); //TODO: waterDeliveryPump -> state.weight
+      waterDeliveryPump.forward();
+      delay(5000); //TODO: state.weight
+      waterDeliveryPump.stop();
       sweepServo(waterRodServo, 90, 0);
       for(int c = 0; c <= amount * 4; c++) {
         sweepServo(riceDeliveryServo, 0, 180);
@@ -118,16 +159,23 @@ void loop() {
         delay(500);
       }
       sweepServo(riceWashingRodServo, 0, 90);
-      delay(1000); //TODO: riceWashingMotor
+      riceWashingMotor.forward();
+      delay(5000); //TODO: 調整
+      riceWashingMotor.stop();
       sweepServo(riceWashingRodServo, 90, 0);
       sweepServo(waterRodServo, 0, 90);
-      delay(1000); //TODO: waterSuctionPump -> state.weight
-      delay(1000); //TODO: waterDeliveryPump -> state.weight
+      waterSuctionPump.forward();
+      delay(5000); //TODO: state.weight
+      waterSuctionPump.stop();
+      delay(1000);
+      waterDeliveryPump.forward();
+      delay(5000); //TODO: state.weight
+      waterDeliveryPump.stop();
       sweepServo(waterRodServo, 90, 0);
-      delay(1000); //TODO: lidWireMotor
+      lidWireMotor.forward();
+      delay(5000); // TODO: 調整
+      lidWireMotor.stop();
       //buttonBle->open(); // TODO:外す
-      res = sendPutRequest("active", String(state.active));
-      M5.Lcd.println(res);
     }
   }
   delay(1000);
