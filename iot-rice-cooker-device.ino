@@ -5,6 +5,15 @@
 #include "wifi_handler.hpp"
 #include "ble_central.hpp"
 
+static const int SERVO_MIN_US = 664;
+static const int SERVO_MAX_US = 2500;
+static const uint8_t RICE_DELIVERY_HOME = 0;
+static const uint8_t RICE_DELIVERY_DROP = 180;
+static const uint8_t RICE_WASHING_ROD_HOME = 0;
+static const uint8_t RICE_WASHING_ROD_DOWN = 105;
+static const uint8_t WATER_ROD_HOME = 180;
+static const uint8_t WATER_ROD_DOWN = 75;
+
 enum Pin : uint8_t {
   /* sensors */
   LoadCellDout = 23,
@@ -74,25 +83,33 @@ void setup() {
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
   /*** Sensors ***/
+  M5.Lcd.println("Initializing Sensors...");
   pinMode(Pin::WaterSensor1, INPUT);
   pinMode(Pin::WaterSensor2, INPUT);
   scale.begin(Pin::LoadCellDout, Pin::LoadCellSck);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
   /*** Actuators ***/
+  M5.Lcd.println("Initializing Actuators...");
   lidWireMotor.init(Pin::LidWireMotor1, Pin::LidWireMotor2);
   riceWashingMotor.init(Pin::RiceWashingMotor);
   waterDeliveryPump.init(Pin::WaterDeliveryPump);
   waterSuctionPump.init(Pin::WaterSuctionPump);
-	riceDeliveryServo.attach(Pin::RiceDeliveryServo, 2656, 10000); // TODO: 調整
-	riceWashingRodServo.attach(Pin::RiceWashingRodServo, 2656, 10000); // TODO: 調整
-	waterRodServo.attach(Pin::WaterRodServo, 2656, 10000); // TODO: 調整
-  for(int c = 0; c < 100; c++) { // return to home position within 3 seconds
-    riceDeliveryServo.write(0);
-    riceWashingRodServo.write(90);
-    waterRodServo.write(90);
+	riceDeliveryServo.setPeriodHertz(50);
+	riceDeliveryServo.attach(Pin::RiceDeliveryServo, SERVO_MIN_US, SERVO_MAX_US);
+	riceWashingRodServo.setPeriodHertz(50);
+	riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US);
+	waterRodServo.setPeriodHertz(50);
+	waterRodServo.attach(Pin::WaterRodServo, SERVO_MIN_US, SERVO_MAX_US);
+  M5.Lcd.println("Returning to Home Position");
+  for(int c = 0; c < 100; c++) { // within 3 seconds
+    if(c % 10 == 0) M5.Lcd.print(".");
+    riceDeliveryServo.write(RICE_DELIVERY_HOME);
+    riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
+    waterRodServo.write(WATER_ROD_HOME);
     delay(30);
   }
+  M5.Lcd.println("Done");
   /*** Wi-Fi and BLE Initializing ***/
   new WifiHandler(); // start Wi-Fi connection
   client = new WebClient();
@@ -107,8 +124,9 @@ String sendPutRequest(String property, String value) {
   );
 }
 
-void sweepServo(Servo& servo, int from, int to, double speedDps = 50.0) {
-  for(double angle = from; angle <= to; angle += speedDps / 50) {
+void sweepServo(Servo& servo, int from, int to, double speedDps = 90) {
+  int dir = (to - from) > 0 ? 1 : -1;
+  for(double angle = from; (dir > 0 ? angle <= to : angle >= to); angle += speedDps * dir / 18) {
     servo.write(round(angle));
     delay(20);
   }
@@ -147,23 +165,23 @@ void loop() {
       lidWireMotor.reverse();
       delay(5000); // TODO: 調整
       lidWireMotor.stop();
-      sweepServo(waterRodServo, 0, 90);
+      sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterDeliveryPump.forward();
       delay(5000); //TODO: state.weight
       waterDeliveryPump.stop();
-      sweepServo(waterRodServo, 90, 0);
+      sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
       for(int c = 0; c <= amount * 4; c++) {
-        sweepServo(riceDeliveryServo, 0, 180);
+        sweepServo(riceDeliveryServo, RICE_DELIVERY_HOME, RICE_DELIVERY_DROP);
         delay(500);
-        sweepServo(riceDeliveryServo, 180, 0);
+        sweepServo(riceDeliveryServo, RICE_DELIVERY_DROP, RICE_DELIVERY_HOME);
         delay(500);
       }
-      sweepServo(riceWashingRodServo, 0, 90);
+      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
       riceWashingMotor.forward();
       delay(5000); //TODO: 調整
       riceWashingMotor.stop();
-      sweepServo(riceWashingRodServo, 90, 0);
-      sweepServo(waterRodServo, 0, 90);
+      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
+      sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
       delay(5000); //TODO: state.weight
       waterSuctionPump.stop();
@@ -171,7 +189,7 @@ void loop() {
       waterDeliveryPump.forward();
       delay(5000); //TODO: state.weight
       waterDeliveryPump.stop();
-      sweepServo(waterRodServo, 90, 0);
+      sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
       lidWireMotor.forward();
       delay(5000); // TODO: 調整
       lidWireMotor.stop();
