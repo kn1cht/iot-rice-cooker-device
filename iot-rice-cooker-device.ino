@@ -14,7 +14,7 @@ GearedMotor riceWashingMotor;
 GearedMotor waterDeliveryPump;
 GearedMotor waterSuctionPump;
 Servo riceDeliveryServo;
-Servo riceWashingRodServo;
+// Servo riceWashingRodServo; // TODO: three servo
 Servo waterRodServo;
 
 WebClient* client;
@@ -27,6 +27,8 @@ void setup() {
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
+  ledcDetachPin(SPEAKER_PIN); // disable speaker
+  pinMode(SPEAKER_PIN, INPUT);
   /*** Sensors ***/
   M5.Lcd.println("Initializing Sensors...");
   pinMode(Pin::WaterSensor1, INPUT);
@@ -42,15 +44,15 @@ void setup() {
   waterSuctionPump.init(Pin::WaterSuctionPump);
 	riceDeliveryServo.setPeriodHertz(50);
 	riceDeliveryServo.attach(Pin::RiceDeliveryServo, SERVO_MIN_US, SERVO_MAX_US);
-	riceWashingRodServo.setPeriodHertz(50);
-	riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US);
+	// riceWashingRodServo.setPeriodHertz(50); // TODO: three servo
+	// riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US); // TODO: three servo
 	waterRodServo.setPeriodHertz(50);
 	waterRodServo.attach(Pin::WaterRodServo, SERVO_MIN_US, SERVO_MAX_US);
   M5.Lcd.println("Returning to Home Position");
   for(int c = 0; c < 100; c++) { // within 3 seconds
     if(c % 10 == 0) M5.Lcd.print(".");
     riceDeliveryServo.write(RICE_DELIVERY_HOME);
-    riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
+    // riceWashingRodServo.write(RICE_WASHING_ROD_HOME); // TODO: three servog
     waterRodServo.write(WATER_ROD_HOME);
     delay(30);
   }
@@ -121,11 +123,11 @@ void loop() {
         sweepServo(riceDeliveryServo, RICE_DELIVERY_DROP, RICE_DELIVERY_HOME);
         delay(500);
       }
-      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
+      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN); // TODO: three servo
       riceWashingMotor.forward();
       delay(5000); //TODO: 調整
       riceWashingMotor.stop();
-      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
+      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME); // TODO: three servo
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
       delay(5000); //TODO: state.weight

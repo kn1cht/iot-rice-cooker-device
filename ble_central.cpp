@@ -66,7 +66,7 @@ void MyClientCallback::onDisconnect(BLEClient* pclient) {
 }
 
 MyAdvertisedDeviceCallbacks::MyAdvertisedDeviceCallbacks(BLEUUID& _serviceUUID, bool& _doConnect):
-serviceUUID(_serviceUUID), doConnect(_doConnect) {}
+doConnect(_doConnect), serviceUUID(_serviceUUID) {}
 
 void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice) {
   Serial.print("BLE Advertised Device found: ");
