@@ -1,7 +1,9 @@
 #include <ESP32Servo.h>
 #include <M5Stack.h>
 
-Servo servo;
+Servo servo1;
+Servo servo2;
+Servo servo3;
 
 void setup() {
   M5.begin(); // setup serial, etc.
@@ -9,11 +11,18 @@ void setup() {
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
+  dac_output_disable( DAC_CHANNEL_1 );
   /*** Sensors ***/
-  servo.setPeriodHertz(50);
-	servo.attach(21, 664, 2500); // TODO: 調整
+  servo1.setPeriodHertz(50);
+	servo1.attach(18, 664, 2500);
+  servo2.setPeriodHertz(50);
+	servo2.attach(19, 664, 2500);
+  servo3.setPeriodHertz(50);
+	servo3.attach(21, 664, 2500);
   for(int c = 0; c < 100; c++) { // return to home position within 3 seconds
-    servo.write(0);
+    servo1.write(0);
+    servo2.write(0);
+    servo3.write(0);
     delay(30);
   }
 }
@@ -32,8 +41,8 @@ void sweepServo(Servo& servo, int from, int to, double speedDps = 100.0) {
 }
 
 void loop() {
-  sweepServo(servo, 0, 180, 100);
+  sweepServo(servo1, 0, 180, 100);
   delay(500);
-  sweepServo(servo, 180, 0, 200);
+  sweepServo(servo1, 180, 0, 200);
   delay(500);
 }
