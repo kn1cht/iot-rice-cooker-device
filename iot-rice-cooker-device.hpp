@@ -2,7 +2,7 @@
 #define IOT_RICE_COOKER_DEVICE_HPP
 
 #include <ESP32Servo.h>
-#include <M5Stack.h>
+#include "web_client.hpp"
 
 static const int SERVO_MIN_US = 664;
 static const int SERVO_MAX_US = 2500;
@@ -53,26 +53,19 @@ struct State {
 
 class GearedMotor {
   public:
-    void init(uint8_t _p1) {
-      p1 = _p1;
-      pinMode(p1, OUTPUT);
-    }
-    void init(uint8_t _p1, uint8_t _p2) {
-      p1 = _p1;
-      p2 = _p2;
-      pinMode(p1, OUTPUT);
-      pinMode(p2, OUTPUT);
-    }
-    void forward() { write(1, 0); }
-    void reverse() { write(0, 1); }
-    void stop() { write(0, 0); }
+    void init(uint8_t _p1);
+    void init(uint8_t _p1, uint8_t _p2);
+    void forward();
+    void reverse();
+    void stop();
   private:
     uint8_t p1;
     uint8_t p2;
-    void write(int v1, int v2) {
-      digitalWrite(p1, v1);
-      if(p2) digitalWrite(p2, v2);
-    }
+    void write(int v1, int v2);
 };
+
+String sendPutRequest(WebClient* client, String property, String value);
+
+void sweepServo(Servo& servo, int from, int to, double speedDps = 90);
 
 #endif // IOT_RICE_COOKER_DEVICE_HPP

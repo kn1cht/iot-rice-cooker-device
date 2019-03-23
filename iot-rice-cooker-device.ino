@@ -28,7 +28,6 @@ void setup() {
   M5.Lcd.setCursor(0,20);
   M5.Lcd.println("Hello, This is M5Stack!");
   ledcDetachPin(SPEAKER_PIN); // disable speaker
-  pinMode(SPEAKER_PIN, INPUT);
   /*** Sensors ***/
   M5.Lcd.println("Initializing Sensors...");
   pinMode(Pin::WaterSensor1, INPUT);
@@ -62,21 +61,6 @@ void setup() {
   client = new WebClient();
   //lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
   //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
-}
-
-String sendPutRequest(WebClient* client, String property, String value) {
-  return client->put_request(
-    "/api/cookers/0/" + property,
-    String("{\"") + property + String("\": \"") + value + String("\"}")
-  );
-}
-
-void sweepServo(Servo& servo, int from, int to, double speedDps = 90) {
-  int dir = (to - from) > 0 ? 1 : -1;
-  for(double angle = from; (dir > 0 ? angle <= to : angle >= to); angle += speedDps * dir / 18) {
-    servo.write(round(angle));
-    delay(20);
-  }
 }
 
 void loop() {
