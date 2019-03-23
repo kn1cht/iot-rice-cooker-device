@@ -30,8 +30,19 @@ enum Pin : uint8_t {
   WaterSuctionPump    = 22,
 };
 
+enum StateId {
+  STATE_OPENLID,
+  STATE_WATER_1,
+  STATE_DROPRICE,
+  STATE_WASHRICE,
+  STATE_WATER_2,
+  STATE_CLOSELID,
+  STATE_COMPLETE,
+  STATE_STANDBY,
+}
+
 struct State{
-  bool active   = false;
+  StateId id    = STATE_STANDBY;
   bool water1   = true;
   double weight = 20;
 };

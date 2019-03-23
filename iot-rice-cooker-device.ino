@@ -91,12 +91,12 @@ void loop() {
   M5.Lcd.println("weight: " + String(state.weight));
   M5.Lcd.println("water1: " + String(state.water1));
 
-  if(state.active) {
+  if(state.id != STATE_STANDBY && state.id != STATE_COMPLETE) {
     M5.Lcd.println("Cooking In Progress!");
-    if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()){
-      state.active = false;
+    if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
+      state.id = STATE_COMPLETE;
       M5.Lcd.println("Cooking complete");
-      res = sendPutRequest("active", String(state.active));
+      res = sendPutRequest("active", "false");
       M5.Lcd.println(res);
     }
   }
@@ -104,8 +104,8 @@ void loop() {
     int amount = client->get_request("/api/cookers/0/amount").toInt();
     M5.Lcd.println(amount);
     if(amount > 0 && state.weight > -30 && state.weight < 30) {
-      state.active = true;
-      res = sendPutRequest("active", String(state.active));
+      state.id = STATE_OPENLID;
+      res = sendPutRequest("active", "true");
       M5.Lcd.println(res);
       M5.Lcd.println("Start cooking");
       //lidBle->open(); // TODO:外す
