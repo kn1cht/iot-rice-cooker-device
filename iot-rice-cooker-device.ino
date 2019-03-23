@@ -123,7 +123,8 @@ void loop() {
       M5.Lcd.println("Pouring Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterDeliveryPump.forward();
-      delay(5000); //TODO: state.weight
+      double prevWeight = state.weight;
+      while(state.weight - prevWeight < 180 * state.amount) delay(100);
       waterDeliveryPump.stop();
       sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
       state.id = STATE_DROPRICE;
@@ -154,14 +155,16 @@ void loop() {
       M5.Lcd.println("Sucking Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
-      delay(5000); //TODO: state.weight
+      delay(5000); //TODO: 調整
       waterSuctionPump.stop();
       state.id = STATE_POURWATER2;
       break;
     }
     case STATE_POURWATER2: {
+      M5.Lcd.println("Pouring Water");
       waterDeliveryPump.forward();
-      delay(5000); //TODO: state.weight
+      double prevWeight = state.weight;
+      while(state.weight - prevWeight < 180 * state.amount) delay(100);
       waterDeliveryPump.stop();
       sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
       state.id = STATE_CLOSELID;
