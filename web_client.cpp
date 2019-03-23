@@ -11,7 +11,7 @@ String WebClient::get_request(String path) {
     M5.Lcd.println("Connection failed!");
     return "";
   }
-  M5.Lcd.println(String("GET ") + HOST_URI + path);
+  //M5.Lcd.println(String("GET ") + HOST_URI + path);
 
   String req_str = String("GET https://") \
     + String(HOST_URI) + path + " HTTP/1.1\r\n" \
@@ -38,7 +38,7 @@ String WebClient::put_request(String path, String data) {
     M5.Lcd.println("Connection failed!");
     return "";
   }
-  M5.Lcd.println(String("PUT ") + HOST_URI + path);
+  //M5.Lcd.println(String("PUT ") + HOST_URI + path);
 
   String req_str = String("PUT https://") \
     + String(HOST_URI) + path + " HTTP/1.1\r\n" \
