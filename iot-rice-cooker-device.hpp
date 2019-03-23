@@ -12,24 +12,21 @@ static const uint8_t RICE_WASHING_ROD_HOME = 0;
 static const uint8_t RICE_WASHING_ROD_DOWN = 105;
 static const uint8_t WATER_ROD_HOME = 180;
 static const uint8_t WATER_ROD_DOWN = 75;
-
-enum Pin : uint8_t {
-  /* sensors */
-  LoadCellDout = 12,
-  LoadCellSck  = 15,
-  WaterSensor1 = 19,
-  WaterSensor2 = 0,
-  PressureSensor = 26,
-  /* actuators */
-  LidWireMotor1       = 17,
-  LidWireMotor2       = 22,
-  RiceDeliveryServo   = 13,
-  RiceWashingMotor    = 1,
-  RiceWashingRodServo = 5,
-  WaterDeliveryPump   = 35,
-  WaterRodServo       = 25,
-  WaterSuctionPump    = 36,
-};
+/* sensors' pins */
+static const uint8_t LOAD_CELL_DOUT_PIN = 12;
+static const uint8_t LOAD_CELL_SCK_PIN  = 15;
+static const uint8_t WATER_SENSOR1_PIN = 19;
+static const uint8_t WATER_SENSOR2_PIN = 0;
+static const uint8_t PRESSURE_SENSOR_PIN = 26;
+/* actuators' pins */
+static const uint8_t LID_WIRE_MOTOR1_PIN = 17;
+static const uint8_t LID_WIRE_MOTOR2_PIN = 22;
+static const uint8_t RICE_DELIVERY_SERVO_PIN = 13;
+static const uint8_t RICE_WASHING_MOTOR_PIN = 1;
+static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5;
+static const uint8_t WATER_DELIVERY_PUMP_PIN = 35;
+static const uint8_t WATER_ROD_SERVO_PIN = 25;
+static const uint8_t WATER_SUCTION_PUMP_PIN = 36;
 
 enum StateId {
   STATE_STANDBY,

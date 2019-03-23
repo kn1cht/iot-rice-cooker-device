@@ -30,26 +30,23 @@ void setup() {
   ledcDetachPin(SPEAKER_PIN); // disable speaker
   /*** Sensors ***/
   M5.Lcd.println("Initializing Sensors...");
-  pinMode(Pin::WaterSensor1, INPUT);
-  pinMode(Pin::WaterSensor2, INPUT);
-  scale.begin(Pin::LoadCellDout, Pin::LoadCellSck);
+  pinMode(WATER_SENSOR1_PIN, INPUT);
+  pinMode(WATER_SENSOR2_PIN, INPUT);
+  scale.begin(LOAD_CELL_DOUT_PIN, LOAD_CELL_SCK_PIN);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
   /*** Actuators ***/
   M5.Lcd.println("Initializing Actuators...");
-  lidWireMotor.init(Pin::LidWireMotor1, Pin::LidWireMotor2);
-  riceWashingMotor.init(Pin::RiceWashingMotor);
-  waterDeliveryPump.init(Pin::WaterDeliveryPump);
-  waterSuctionPump.init(Pin::WaterSuctionPump);
-	riceDeliveryServo.setPeriodHertz(50);
-	riceDeliveryServo.attach(Pin::RiceDeliveryServo, SERVO_MIN_US, SERVO_MAX_US);
-	riceWashingRodServo.setPeriodHertz(50);
-	riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US);
-	waterRodServo.setPeriodHertz(50);
-	waterRodServo.attach(Pin::WaterRodServo, SERVO_MIN_US, SERVO_MAX_US);
+  lidWireMotor.init(LID_WIRE_MOTOR1_PIN, LID_WIRE_MOTOR2_PIN);
+  riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
+  waterDeliveryPump.init(WATER_DELIVERY_PUMP_PIN);
+  waterSuctionPump.init(WATER_SUCTION_PUMP_PIN);
+	riceDeliveryServo.attach(RICE_DELIVERY_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+	riceWashingRodServo.attach(RICE_WASHING_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+	waterRodServo.attach(WATER_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
   M5.Lcd.println("Returning to Home Position");
   for(int c = 0; c < 100; c++) { // within 3 seconds
-    if(c % 10 == 0) M5.Lcd.print(".");
+    if(c % 20 == 0) M5.Lcd.print(".");
     riceDeliveryServo.write(RICE_DELIVERY_HOME);
     riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
     waterRodServo.write(WATER_ROD_HOME);
@@ -61,15 +58,17 @@ void setup() {
   client = new WebClient();
   //lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
   //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
+  M5.Lcd.clear();
+  M5.Lcd.setFreeFont(&FreeSans12pt7b);
+  M5.Lcd.setTextDatum(TC_DATUM);
 }
 
 void loop() {
-  M5.update();
-  delay(10); // for button pressing
-  M5.Lcd.clear(); M5.Lcd.setCursor(0,20);
+  M5.Lcd.clear();
+  M5.Lcd.setTextDatum(TC_DATUM);
 
   state.weight = scale.get_units(10); // [g]
-  state.water1 = digitalRead(Pin::WaterSensor1); // 0: water shortage alert
+  state.water1 = digitalRead(WATER_SENSOR1_PIN); // 0: water shortage alert
 
   String res = sendPutRequest(client, "weight", String(state.weight));
   M5.Lcd.println("weight: " + String(state.weight));
@@ -174,5 +173,6 @@ void loop() {
       break;
     }
   }
+  M5.update();
   delay(1000);
 }
