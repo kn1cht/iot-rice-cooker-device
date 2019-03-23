@@ -93,7 +93,7 @@ void loop() {
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
     state.id = STATE_COMPLETE;
-    res = sendPutRequest("active", "false");
+    res = sendPutRequest("active", "0");
     M5.Lcd.println(res);
   }
 
@@ -105,7 +105,7 @@ void loop() {
       M5.Lcd.println("amount: " + state.amount);
       if(state.amount > 0) {
         state.id = STATE_OPENLID;
-        res = sendPutRequest("active", "true");
+        res = sendPutRequest("active", "1");
         M5.Lcd.println(res);
       }
       break;
