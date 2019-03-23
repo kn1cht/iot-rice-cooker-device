@@ -15,8 +15,8 @@ static const uint8_t WATER_ROD_DOWN = 75;
 /* sensors' pins */
 static const uint8_t LOAD_CELL_DOUT_PIN = 12;
 static const uint8_t LOAD_CELL_SCK_PIN  = 15;
-static const uint8_t WATER_SENSOR1_PIN = 19;
-static const uint8_t WATER_SENSOR2_PIN = 0;
+static const uint8_t WATER_TANK_SENSOR_PIN = 19;
+static const uint8_t WASTE_TANK_SENSOR_PIN = 0;
 static const uint8_t PRESSURE_SENSOR_PIN = 26;
 /* actuators' pins */
 static const uint8_t LID_WIRE_MOTOR1_PIN = 17;
@@ -44,8 +44,10 @@ enum StateId {
 struct State {
   StateId id = STATE_STANDBY;
   int amount = 0;
-  bool water1 = true;
+  bool water = true;
+  bool waste = false;
   double weight = 20;
+  double pressure = 0;
 };
 
 class GearedMotor {

@@ -30,8 +30,8 @@ void setup() {
   ledcDetachPin(SPEAKER_PIN); // disable speaker
   /*** Sensors ***/
   M5.Lcd.println("Initializing Sensors...");
-  pinMode(WATER_SENSOR1_PIN, INPUT);
-  pinMode(WATER_SENSOR2_PIN, INPUT);
+  pinMode(WATER_TANK_SENSOR_PIN, INPUT);
+  pinMode(WASTE_TANK_SENSOR_PIN, INPUT);
   scale.begin(LOAD_CELL_DOUT_PIN, LOAD_CELL_SCK_PIN);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
@@ -68,11 +68,15 @@ void loop() {
   M5.Lcd.setTextDatum(TC_DATUM);
 
   state.weight = scale.get_units(10); // [g]
-  state.water1 = digitalRead(WATER_SENSOR1_PIN); // 0: water shortage alert
+  state.water = digitalRead(WATER_TANK_SENSOR_PIN); // 0: water shortage alert
+  state.waste = digitalRead(WASTE_TANK_SENSOR_PIN); // 1: water full alert
+  state.pressure = analogRead(PRESSURE_SENSOR_PIN) * 3.6 / 4096;
 
   String res = sendPutRequest(client, "weight", String(state.weight));
-  M5.Lcd.println("weight: " + String(state.weight));
-  M5.Lcd.println("water1: " + String(state.water1));
+  M5.Lcd.println("weight   : " + String(state.weight));
+  M5.Lcd.println("water    : " + String(state.water));
+  M5.Lcd.println("waste    : " + String(state.waste));
+  M5.Lcd.println("pressure : " + String(state.pressure));
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
     state.id = STATE_COMPLETE;
