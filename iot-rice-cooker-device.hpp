@@ -15,19 +15,20 @@ static const uint8_t WATER_ROD_DOWN = 75;
 
 enum Pin : uint8_t {
   /* sensors */
-  LoadCellDout = 23,
-  LoadCellSck  = 24,
-  WaterSensor1 = 2,
-  WaterSensor2 = 5,
+  LoadCellDout = 12,
+  LoadCellSck  = 15,
+  WaterSensor1 = 19,
+  WaterSensor2 = 0,
+  PressureSensor = 26,
   /* actuators */
-  LidWireMotor1       = 1,
-  LidWireMotor2       = 3,
-  RiceDeliveryServo   = 16,
-  RiceWashingMotor    = 17,
-  RiceWashingRodServo = 18,
-  WaterDeliveryPump   = 19,
-  WaterRodServo       = 21,
-  WaterSuctionPump    = 22,
+  LidWireMotor1       = 17,
+  LidWireMotor2       = 22,
+  RiceDeliveryServo   = 13,
+  RiceWashingMotor    = 1,
+  RiceWashingRodServo = 5,
+  WaterDeliveryPump   = 35,
+  WaterRodServo       = 25,
+  WaterSuctionPump    = 36,
 };
 
 enum StateId {

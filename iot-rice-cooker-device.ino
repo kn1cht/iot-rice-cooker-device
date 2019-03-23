@@ -14,7 +14,7 @@ GearedMotor riceWashingMotor;
 GearedMotor waterDeliveryPump;
 GearedMotor waterSuctionPump;
 Servo riceDeliveryServo;
-// Servo riceWashingRodServo; // TODO: three servo
+Servo riceWashingRodServo;
 Servo waterRodServo;
 
 WebClient* client;
@@ -44,15 +44,15 @@ void setup() {
   waterSuctionPump.init(Pin::WaterSuctionPump);
 	riceDeliveryServo.setPeriodHertz(50);
 	riceDeliveryServo.attach(Pin::RiceDeliveryServo, SERVO_MIN_US, SERVO_MAX_US);
-	// riceWashingRodServo.setPeriodHertz(50); // TODO: three servo
-	// riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US); // TODO: three servo
+	riceWashingRodServo.setPeriodHertz(50);
+	riceWashingRodServo.attach(Pin::RiceWashingRodServo, SERVO_MIN_US, SERVO_MAX_US);
 	waterRodServo.setPeriodHertz(50);
 	waterRodServo.attach(Pin::WaterRodServo, SERVO_MIN_US, SERVO_MAX_US);
   M5.Lcd.println("Returning to Home Position");
   for(int c = 0; c < 100; c++) { // within 3 seconds
     if(c % 10 == 0) M5.Lcd.print(".");
     riceDeliveryServo.write(RICE_DELIVERY_HOME);
-    // riceWashingRodServo.write(RICE_WASHING_ROD_HOME); // TODO: three servog
+    riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
     waterRodServo.write(WATER_ROD_HOME);
     delay(30);
   }
@@ -64,7 +64,7 @@ void setup() {
   //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
 }
 
-String sendPutRequest(String property, String value) {
+String sendPutRequest(WebClient* client, String property, String value) {
   return client->put_request(
     "/api/cookers/0/" + property,
     String("{\"") + property + String("\": \"") + value + String("\"}")
@@ -87,13 +87,13 @@ void loop() {
   state.weight = scale.get_units(10); // [g]
   state.water1 = digitalRead(Pin::WaterSensor1); // 0: water shortage alert
 
-  String res = sendPutRequest("weight", String(state.weight));
+  String res = sendPutRequest(client, "weight", String(state.weight));
   M5.Lcd.println("weight: " + String(state.weight));
   M5.Lcd.println("water1: " + String(state.water1));
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
     state.id = STATE_COMPLETE;
-    res = sendPutRequest("active", "0");
+    res = sendPutRequest(client, "active", "0");
     M5.Lcd.println(res);
   }
 
@@ -105,7 +105,7 @@ void loop() {
       M5.Lcd.println("amount: " + state.amount);
       if(state.amount > 0) {
         state.id = STATE_OPENLID;
-        res = sendPutRequest("active", "1");
+        res = sendPutRequest(client, "active", "1");
         M5.Lcd.println(res);
       }
       break;
@@ -143,11 +143,11 @@ void loop() {
     }
     case STATE_WASHRICE: {
       M5.Lcd.println("Washing Rice");
-      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN); // TODO: three servo
+      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
       riceWashingMotor.forward();
       delay(5000); //TODO: 調整
       riceWashingMotor.stop();
-      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME); // TODO: three servo
+      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
       state.id = STATE_SUCKWATER;
       break;
     }
