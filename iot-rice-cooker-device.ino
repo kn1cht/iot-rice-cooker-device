@@ -91,56 +91,100 @@ void loop() {
   M5.Lcd.println("weight: " + String(state.weight));
   M5.Lcd.println("water1: " + String(state.water1));
 
-  if(state.id != STATE_STANDBY && state.id != STATE_COMPLETE) {
-    M5.Lcd.println("Cooking In Progress!");
-    if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
-      state.id = STATE_COMPLETE;
-      M5.Lcd.println("Cooking complete");
-      res = sendPutRequest("active", "false");
-      M5.Lcd.println(res);
-    }
+  if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
+    state.id = STATE_COMPLETE;
+    res = sendPutRequest("active", "false");
+    M5.Lcd.println(res);
   }
-  else {
-    int amount = client->get_request("/api/cookers/0/amount").toInt();
-    M5.Lcd.println(amount);
-    if(amount > 0 && state.weight > -30 && state.weight < 30) {
-      state.id = STATE_OPENLID;
-      res = sendPutRequest("active", "true");
-      M5.Lcd.println(res);
-      M5.Lcd.println("Start cooking");
+
+  switch(state.id) {
+    case STATE_STANDBY: {
+      M5.Lcd.println("Standby");
+      if(state.weight >= 30) state.id = STATE_COMPLETE;
+      state.amount = client->get_request("/api/cookers/0/amount").toInt();
+      M5.Lcd.println("amount: " + state.amount);
+      if(state.amount > 0) {
+        state.id = STATE_OPENLID;
+        res = sendPutRequest("active", "true");
+        M5.Lcd.println(res);
+      }
+      break;
+    }
+    case STATE_OPENLID: {
+      M5.Lcd.println("Opening Lid");
       //lidBle->open(); // TODO:外す
       lidWireMotor.reverse();
       delay(5000); // TODO: 調整
       lidWireMotor.stop();
+      state.id = STATE_POURWATER1;
+      break;
+    }
+    case STATE_POURWATER1: {
+      M5.Lcd.println("Pouring Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterDeliveryPump.forward();
       delay(5000); //TODO: state.weight
       waterDeliveryPump.stop();
       sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
-      for(int c = 0; c <= amount * 4; c++) {
+      state.id = STATE_DROPRICE;
+      break;
+    }
+    case STATE_DROPRICE: {
+      M5.Lcd.println("Dropping Rice");
+      for(int c = 0; c <= state.amount * 4; c++) {
         sweepServo(riceDeliveryServo, RICE_DELIVERY_HOME, RICE_DELIVERY_DROP);
         delay(500);
         sweepServo(riceDeliveryServo, RICE_DELIVERY_DROP, RICE_DELIVERY_HOME);
         delay(500);
       }
+      state.id = STATE_WASHRICE;
+      break;
+    }
+    case STATE_WASHRICE: {
+      M5.Lcd.println("Washing Rice");
       // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN); // TODO: three servo
       riceWashingMotor.forward();
       delay(5000); //TODO: 調整
       riceWashingMotor.stop();
       // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME); // TODO: three servo
+      state.id = STATE_SUCKWATER;
+      break;
+    }
+    case STATE_SUCKWATER: {
+      M5.Lcd.println("Sucking Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
       delay(5000); //TODO: state.weight
       waterSuctionPump.stop();
-      delay(1000);
+      state.id = STATE_POURWATER2;
+      break;
+    }
+    case STATE_POURWATER2: {
       waterDeliveryPump.forward();
       delay(5000); //TODO: state.weight
       waterDeliveryPump.stop();
       sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+      state.id = STATE_CLOSELID;
+      break;
+    }
+    case STATE_CLOSELID: {
+      M5.Lcd.println("Closing Lid");
       lidWireMotor.forward();
       delay(5000); // TODO: 調整
       lidWireMotor.stop();
+      delay(500);
       //buttonBle->open(); // TODO:外す
+      state.id = STATE_COOKING;
+      break;
+    }
+    case STATE_COOKING: {
+      M5.Lcd.println("Cooking in Progress");
+      break;
+    }
+    case STATE_COMPLETE: {
+      M5.Lcd.println("Cooking Complete");
+      if(state.weight > -30 && state.weight < 30) state.id = STATE_STANDBY;
+      break;
     }
   }
   delay(1000);

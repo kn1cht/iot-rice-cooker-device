@@ -31,19 +31,22 @@ enum Pin : uint8_t {
 };
 
 enum StateId {
+  STATE_STANDBY,
   STATE_OPENLID,
-  STATE_WATER_1,
+  STATE_POURWATER1,
   STATE_DROPRICE,
   STATE_WASHRICE,
-  STATE_WATER_2,
+  STATE_SUCKWATER,
+  STATE_POURWATER2,
   STATE_CLOSELID,
+  STATE_COOKING,
   STATE_COMPLETE,
-  STATE_STANDBY,
-}
+};
 
-struct State{
-  StateId id    = STATE_STANDBY;
-  bool water1   = true;
+struct State {
+  StateId id = STATE_STANDBY;
+  int amount = 0;
+  bool water1 = true;
   double weight = 20;
 };
 
