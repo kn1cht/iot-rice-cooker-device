@@ -1,6 +1,7 @@
 #include <ESP32Servo.h>
 #include <HX711.h>
 #include <M5Stack.h>
+#include "arduino_ota.hpp"
 #include "iot-rice-cooker-device.hpp"
 #include "web_client.hpp"
 #include "wifi_handler.hpp"
@@ -55,6 +56,7 @@ void setup() {
   M5.Lcd.println("Done");
   /*** Wi-Fi and BLE Initializing ***/
   new WifiHandler(); // start Wi-Fi connection
+  otaSetup(); // setup OTA handler
   client = new WebClient();
   //lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
   //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
@@ -66,6 +68,7 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
   M5.Lcd.clear();
   M5.Lcd.setCursor(0,20);
 
