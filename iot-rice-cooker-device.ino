@@ -61,8 +61,8 @@ void setup() {
   M5.Lcd.clear();
   M5.Lcd.setFreeFont(&FreeSans12pt7b);
   Serial.println("Press Q--P key to jump state.");
-  Serial.println("Q: STANDBY    W: OPENLID    E: POURWATER1 R: DROPRICE T: WASHRICE");
-  Serial.println("Y: _SUCKWATER U: POURWATER2 I: CLOSELID   O: COOKING  P: COMPLETE");
+  Serial.println("Q: STANDBY   W: OPENLID    E: POURWATER1 R: DROPRICE T: WASHRICE");
+  Serial.println("Y: SUCKWATER U: POURWATER2 I: CLOSELID   O: COOKING  P: COMPLETE");
 }
 
 void loop() {
@@ -70,35 +70,20 @@ void loop() {
   M5.Lcd.setCursor(0,20);
 
   state.weight = scale.get_units(10); // [g]
+  M5.Lcd.println("weight   : " + String(state.weight));
   state.water = digitalRead(WATER_TANK_SENSOR_PIN); // 0: water shortage alert
+  M5.Lcd.println("water    : " + String(state.water));
   state.waste = digitalRead(WASTE_TANK_SENSOR_PIN); // 1: water full alert
+  M5.Lcd.println("waste    : " + String(state.waste));
   state.pressure = analogRead(PRESSURE_SENSOR_PIN) * 3.6 / 4096;
+  M5.Lcd.println("pressure : " + String(state.pressure));
 
   String res = sendPutRequest(client, "weight", String(state.weight));
-  M5.Lcd.println("weight   : " + String(state.weight));
-  M5.Lcd.println("water    : " + String(state.water));
-  M5.Lcd.println("waste    : " + String(state.waste));
-  M5.Lcd.println("pressure : " + String(state.pressure));
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
     state.id = STATE_COMPLETE;
     res = sendPutRequest(client, "active", "0");
     M5.Lcd.println(res);
-  }
-  if (Serial.available()) {
-    int in = Serial.read();
-    switch (in) {
-      case 'Q': state.id = STATE_STANDBY; break;    // 待機
-      case 'W': state.id = STATE_OPENLID; break;    // 蓋開け
-      case 'E': state.id = STATE_POURWATER1; break; // 注水1
-      case 'R': state.id = STATE_DROPRICE; break;   // 米投入
-      case 'T': state.id = STATE_WASHRICE; break;   // 洗米
-      case 'Y': state.id = STATE_SUCKWATER; break;  // 吸水
-      case 'U': state.id = STATE_POURWATER2; break; // 注水2
-      case 'I': state.id = STATE_CLOSELID; break;   // 蓋閉じ
-      case 'O': state.id = STATE_COOKING; break;    // 炊飯（終了は未実装）
-      case 'P': state.id = STATE_COMPLETE; break;   // 炊飯完了
-    }
   }
 
   switch(state.id) {
@@ -118,7 +103,7 @@ void loop() {
       M5.Lcd.println("Opening Lid");
       //lidBle->open(); // TODO:外す
       lidWireMotor.reverse();
-      delay(5000); // TODO: 調整
+      delay(6000); // TODO: 調整
       lidWireMotor.stop();
       state.id = STATE_POURWATER1;
       break;
@@ -192,6 +177,21 @@ void loop() {
       M5.Lcd.println("Cooking Complete");
       if(state.weight > -30 && state.weight < 30) state.id = STATE_STANDBY;
       break;
+    }
+  }
+  if (Serial.available()) {
+    int in = Serial.read();
+    switch (in) {
+      case 'Q': state.id = STATE_STANDBY; break;    // 待機
+      case 'W': state.id = STATE_OPENLID; break;    // 蓋開け
+      case 'E': state.id = STATE_POURWATER1; break; // 注水1
+      case 'R': state.id = STATE_DROPRICE; break;   // 米投入
+      case 'T': state.id = STATE_WASHRICE; break;   // 洗米
+      case 'Y': state.id = STATE_SUCKWATER; break;  // 吸水
+      case 'U': state.id = STATE_POURWATER2; break; // 注水2
+      case 'I': state.id = STATE_CLOSELID; break;   // 蓋閉じ
+      case 'O': state.id = STATE_COOKING; break;    // 炊飯（終了は未実装）
+      case 'P': state.id = STATE_COMPLETE; break;   // 炊飯完了
     }
   }
   M5.update();
