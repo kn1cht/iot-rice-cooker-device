@@ -107,7 +107,7 @@ void loop() {
     }
     case STATE_OPENLID: {
       M5.Lcd.println("Opening Lid");
-      lidBle->open();
+      lidBle->open(700);
       lidWireMotor.reverse();
       delay(6000);
       lidWireMotor.stop();
@@ -132,7 +132,7 @@ void loop() {
       else if(state.lifeCycle == EXIT_STATE) {
         sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
         state.id = STATE_DROPRICE;
-          state.lifeCycle = INIT_STATE;
+        state.lifeCycle = INIT_STATE;
       }
       break;
     }
@@ -151,7 +151,7 @@ void loop() {
       M5.Lcd.println("Washing Rice");
       sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
       riceWashingMotor.forward();
-      delay(5000); //TODO: 調整
+      delay(20000);
       riceWashingMotor.stop();
       sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
       state.id = STATE_SUCKWATER;
@@ -161,14 +161,14 @@ void loop() {
       M5.Lcd.println("Sucking Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
-      delay(10000); //TODO: 調整
+      delay(40000 * state.amount);
       waterSuctionPump.stop();
       state.id = STATE_POURWATER2;
       state.lifeCycle = INIT_STATE;
       break;
     }
     case STATE_POURWATER2: {
-      M5.Lcd.println("Pouring Motor");
+      M5.Lcd.println("Pouring Wator");
       if(state.lifeCycle == INIT_STATE) {
         waterDeliveryPump.forward();
         state.prevWeight = state.weight;
@@ -182,18 +182,20 @@ void loop() {
       }
       else if(state.lifeCycle == EXIT_STATE) {
         sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
-        state.id = STATE_DROPRICE;
-          state.lifeCycle = INIT_STATE;
+        state.id = STATE_CLOSELID;
+        state.lifeCycle = INIT_STATE;
       }
       break;
     }
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
       lidWireMotor.forward();
-      delay(6000);
+      delay(9000);
+      lidBle->open(700);
+      delay(500);
       lidWireMotor.stop();
       delay(500);
-      buttonBle->open();
+      buttonBle->open(500);
       state.id = STATE_COOKING;
       break;
     }

@@ -9,9 +9,9 @@ static const int SERVO_MAX_US = 2500;
 static const uint8_t RICE_DELIVERY_HOME = 0;
 static const uint8_t RICE_DELIVERY_DROP = 180;
 static const uint8_t RICE_WASHING_ROD_HOME = 0;
-static const uint8_t RICE_WASHING_ROD_DOWN = 105;
+static const uint8_t RICE_WASHING_ROD_DOWN = 120;
 static const uint8_t WATER_ROD_HOME = 180;
-static const uint8_t WATER_ROD_DOWN = 75;
+static const uint8_t WATER_ROD_DOWN = 55;
 /* sensors' pins */
 static const uint8_t LOAD_CELL_DOUT_PIN = 15;
 static const uint8_t LOAD_CELL_SCK_PIN  = 12;
@@ -19,8 +19,8 @@ static const uint8_t WATER_TANK_SENSOR_PIN = 19;
 static const uint8_t WASTE_TANK_SENSOR_PIN = 0;
 static const uint8_t PRESSURE_SENSOR_PIN = 26;
 /* actuators' pins */
-static const uint8_t LID_WIRE_MOTOR1_PIN = 17;
-static const uint8_t LID_WIRE_MOTOR2_PIN = 22;
+static const uint8_t LID_WIRE_MOTOR1_PIN = 22;
+static const uint8_t LID_WIRE_MOTOR2_PIN = 17;
 static const uint8_t RICE_DELIVERY_SERVO_PIN = 13;
 static const uint8_t RICE_WASHING_MOTOR_PIN = 21;
 static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5;

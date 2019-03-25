@@ -8,7 +8,7 @@ static BLEAdvertisedDevice* myDevice;
 class BleCentral {
   public:
     BleCentral(std::string _serviceUUID, std::string _charUUID);
-    void open();
+    void open(int time);
 
   private:
     bool connected = false;

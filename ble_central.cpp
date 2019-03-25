@@ -15,11 +15,11 @@ BleCentral::BleCentral(std::string _serviceUUID, std::string _charUUID) {
   openConnection();
 }
 
-void BleCentral::open() {
+void BleCentral::open(int time = 700) {
   openConnection();
-  pRemoteCharacteristic->writeValue(01,true); delay(700);
+  pRemoteCharacteristic->writeValue(01,true); delay(time);
   pRemoteCharacteristic->writeValue(03,true); delay(100);
-  pRemoteCharacteristic->writeValue(02,true); delay(700);
+  pRemoteCharacteristic->writeValue(02,true); delay(time);
   pRemoteCharacteristic->writeValue(03,true); delay(100);
   pRemoteCharacteristic->writeValue(00,true);
 }
