@@ -9,9 +9,9 @@ void GearedMotor::init(uint8_t _p1, uint8_t _p2) {
   p1 = _p1;
   p2 = _p2;
   pinMode(p1, OUTPUT);
-  digitalWrite(p1, 0);
+  digitalWrite(p1, LOW);
   pinMode(p2, OUTPUT);
-  digitalWrite(p2, 0);
+  digitalWrite(p2, LOW);
 }
 void GearedMotor::forward() { write(1, 0); }
 void GearedMotor::reverse() { write(0, 1); }

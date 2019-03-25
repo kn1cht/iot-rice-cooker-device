@@ -22,6 +22,8 @@ WebClient* client;
 BleCentral* lidBle;
 BleCentral* buttonBle;
 
+String res;
+
 void setup() {
   M5.begin(); // setup serial, etc.
   delay(10);
@@ -56,7 +58,6 @@ void setup() {
   M5.Lcd.println("Done");
   /*** Wi-Fi and BLE Initializing ***/
   new WifiHandler(); // start Wi-Fi connection
-  otaSetup(); // setup OTA handler
   client = new WebClient();
   lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
   buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
@@ -68,12 +69,12 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
   M5.Lcd.clear();
   M5.Lcd.setCursor(0,20);
 
   state.weight = scale.get_units(10); // [g]
   M5.Lcd.println("weight   : " + String(state.weight));
+  M5.Lcd.println("prevW    : " + String(state.prevWeight));
   state.water = digitalRead(WATER_TANK_SENSOR_PIN); // 0: water shortage alert
   M5.Lcd.println("water    : " + String(state.water));
   state.waste = digitalRead(WASTE_TANK_SENSOR_PIN); // 1: water full alert
@@ -81,7 +82,9 @@ void loop() {
   state.pressure = analogRead(PRESSURE_SENSOR_PIN) * 3.6 / 4096;
   M5.Lcd.println("pressure : " + String(state.pressure));
 
-  String res = sendPutRequest(client, "weight", String(state.weight));
+  if(state.id == STATE_STANDBY || state.id == STATE_COMPLETE) {
+    res = sendPutRequest(client, "weight", String(state.weight));
+  }
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
     state.id = STATE_COMPLETE;
@@ -106,7 +109,7 @@ void loop() {
       M5.Lcd.println("Opening Lid");
       lidBle->open();
       lidWireMotor.reverse();
-      delay(6000); // TODO: 調整
+      delay(6000);
       lidWireMotor.stop();
       state.id = STATE_POURWATER1;
       state.lifeCycle = INIT_STATE;
@@ -118,6 +121,7 @@ void loop() {
         sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
         waterDeliveryPump.forward();
         state.prevWeight = state.weight;
+        state.lifeCycle = MID_STATE;
       }
       else if(state.lifeCycle == MID_STATE) {
         if(state.weight - state.prevWeight >= 180 * state.amount) {
@@ -182,7 +186,7 @@ void loop() {
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
       lidWireMotor.forward();
-      delay(5000); // TODO: 調整
+      delay(6000);
       lidWireMotor.stop();
       delay(500);
       buttonBle->open();
@@ -215,5 +219,5 @@ void loop() {
     }
   }
   M5.update();
-  delay(100);
+  delay(1000);
 }
