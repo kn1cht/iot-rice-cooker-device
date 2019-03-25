@@ -1,7 +1,6 @@
 #include <ESP32Servo.h>
 #include <HX711.h>
 #include <M5Stack.h>
-#include "arduino_ota.hpp"
 #include "iot-rice-cooker-device.hpp"
 #include "web_client.hpp"
 #include "wifi_handler.hpp"
@@ -107,10 +106,11 @@ void loop() {
     }
     case STATE_OPENLID: {
       M5.Lcd.println("Opening Lid");
-      lidBle->open(700);
+      lidBle->openForward(700);
       lidWireMotor.reverse();
       delay(6000);
       lidWireMotor.stop();
+      lidBle->openReverse(700);
       state.id = STATE_POURWATER1;
       state.lifeCycle = INIT_STATE;
       break;
@@ -161,7 +161,7 @@ void loop() {
       M5.Lcd.println("Sucking Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
-      delay(40000 * state.amount);
+      delay(60000 * state.amount);
       waterSuctionPump.stop();
       state.id = STATE_POURWATER2;
       state.lifeCycle = INIT_STATE;
@@ -195,7 +195,7 @@ void loop() {
       delay(500);
       lidWireMotor.stop();
       delay(500);
-      buttonBle->open(500);
+      buttonBle->open(600);
       state.id = STATE_COOKING;
       break;
     }

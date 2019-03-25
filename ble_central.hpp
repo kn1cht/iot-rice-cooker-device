@@ -9,6 +9,8 @@ class BleCentral {
   public:
     BleCentral(std::string _serviceUUID, std::string _charUUID);
     void open(int time);
+    void openForward(int time);
+    void openReverse(int time);
 
   private:
     bool connected = false;

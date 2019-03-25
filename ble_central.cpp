@@ -24,6 +24,18 @@ void BleCentral::open(int time = 700) {
   pRemoteCharacteristic->writeValue(00,true);
 }
 
+void BleCentral::openForward(int time = 700) {
+  openConnection();
+  pRemoteCharacteristic->writeValue(01,true); delay(time);
+  pRemoteCharacteristic->writeValue(03,true); delay(100);
+}
+void BleCentral::openReverse(int time = 700) {
+  openConnection();
+  pRemoteCharacteristic->writeValue(02,true); delay(time);
+  pRemoteCharacteristic->writeValue(03,true); delay(100);
+  pRemoteCharacteristic->writeValue(00,true);
+}
+
 void BleCentral::openConnection() {
   while(connected == false) {
     pBLEScan->start(5, false);

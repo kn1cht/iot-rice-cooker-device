@@ -11,7 +11,7 @@ static const uint8_t RICE_DELIVERY_DROP = 180;
 static const uint8_t RICE_WASHING_ROD_HOME = 0;
 static const uint8_t RICE_WASHING_ROD_DOWN = 120;
 static const uint8_t WATER_ROD_HOME = 180;
-static const uint8_t WATER_ROD_DOWN = 55;
+static const uint8_t WATER_ROD_DOWN = 45;
 /* sensors' pins */
 static const uint8_t LOAD_CELL_DOUT_PIN = 15;
 static const uint8_t LOAD_CELL_SCK_PIN  = 12;
