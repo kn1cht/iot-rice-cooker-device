@@ -22,11 +22,11 @@ static const uint8_t PRESSURE_SENSOR_PIN = 26;
 static const uint8_t LID_WIRE_MOTOR1_PIN = 17;
 static const uint8_t LID_WIRE_MOTOR2_PIN = 22;
 static const uint8_t RICE_DELIVERY_SERVO_PIN = 13;
-static const uint8_t RICE_WASHING_MOTOR_PIN = 1;
+static const uint8_t RICE_WASHING_MOTOR_PIN = 21;
 static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5;
-static const uint8_t WATER_DELIVERY_PUMP_PIN = 35;
+static const uint8_t WATER_DELIVERY_PUMP_PIN = 2;
 static const uint8_t WATER_ROD_SERVO_PIN = 25;
-static const uint8_t WATER_SUCTION_PUMP_PIN = 36;
+static const uint8_t WATER_SUCTION_PUMP_PIN = 16;
 
 enum StateId {
   STATE_STANDBY,

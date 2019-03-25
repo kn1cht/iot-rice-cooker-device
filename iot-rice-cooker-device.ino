@@ -161,15 +161,18 @@ void loop() {
       M5.Lcd.println("Sucking Water");
       sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
-      delay(5000); //TODO: 調整
+      delay(10000); //TODO: 調整
       waterSuctionPump.stop();
       state.id = STATE_POURWATER2;
+      state.lifeCycle = INIT_STATE;
       break;
     }
     case STATE_POURWATER2: {
+      M5.Lcd.println("Pouring Motor");
       if(state.lifeCycle == INIT_STATE) {
         waterDeliveryPump.forward();
         state.prevWeight = state.weight;
+          state.lifeCycle = MID_STATE;
       }
       else if(state.lifeCycle == MID_STATE) {
         if(state.weight - state.prevWeight >= 180 * state.amount) {
@@ -182,6 +185,7 @@ void loop() {
         state.id = STATE_DROPRICE;
           state.lifeCycle = INIT_STATE;
       }
+      break;
     }
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
