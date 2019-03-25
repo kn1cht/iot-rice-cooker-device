@@ -58,8 +58,8 @@ void setup() {
   new WifiHandler(); // start Wi-Fi connection
   otaSetup(); // setup OTA handler
   client = new WebClient();
-  //lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
-  //buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
+  lidBle = new BleCentral("12345678-9012-3456-7890-1234567890ff", "12345678-9012-3456-7890-123456789011");
+  buttonBle = new BleCentral("12345678-9012-3456-7890-1234567890aa", "12345678-9012-3456-7890-123456789022");
   M5.Lcd.clear();
   M5.Lcd.setFreeFont(&FreeSans12pt7b);
   Serial.println("Press Q--P key to jump state.");
@@ -104,22 +104,32 @@ void loop() {
     }
     case STATE_OPENLID: {
       M5.Lcd.println("Opening Lid");
-      //lidBle->open(); // TODO:外す
+      lidBle->open();
       lidWireMotor.reverse();
       delay(6000); // TODO: 調整
       lidWireMotor.stop();
       state.id = STATE_POURWATER1;
+      state.lifeCycle = INIT_STATE;
       break;
     }
     case STATE_POURWATER1: {
       M5.Lcd.println("Pouring Water");
-      sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
-      waterDeliveryPump.forward();
-      double prevWeight = state.weight;
-      while(state.weight - prevWeight < 180 * state.amount) delay(100);
-      waterDeliveryPump.stop();
-      sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
-      state.id = STATE_DROPRICE;
+      if(state.lifeCycle == INIT_STATE) {
+        sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
+        waterDeliveryPump.forward();
+        state.prevWeight = state.weight;
+      }
+      else if(state.lifeCycle == MID_STATE) {
+        if(state.weight - state.prevWeight >= 180 * state.amount) {
+          waterDeliveryPump.stop();
+          state.lifeCycle = EXIT_STATE;
+        }
+      }
+      else if(state.lifeCycle == EXIT_STATE) {
+        sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        state.id = STATE_DROPRICE;
+          state.lifeCycle = INIT_STATE;
+      }
       break;
     }
     case STATE_DROPRICE: {
@@ -153,14 +163,21 @@ void loop() {
       break;
     }
     case STATE_POURWATER2: {
-      M5.Lcd.println("Pouring Water");
-      waterDeliveryPump.forward();
-      double prevWeight = state.weight;
-      while(state.weight - prevWeight < 180 * state.amount) delay(100);
-      waterDeliveryPump.stop();
-      sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
-      state.id = STATE_CLOSELID;
-      break;
+      if(state.lifeCycle == INIT_STATE) {
+        waterDeliveryPump.forward();
+        state.prevWeight = state.weight;
+      }
+      else if(state.lifeCycle == MID_STATE) {
+        if(state.weight - state.prevWeight >= 180 * state.amount) {
+          waterDeliveryPump.stop();
+          state.lifeCycle = EXIT_STATE;
+        }
+      }
+      else if(state.lifeCycle == EXIT_STATE) {
+        sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        state.id = STATE_DROPRICE;
+          state.lifeCycle = INIT_STATE;
+      }
     }
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
@@ -168,7 +185,7 @@ void loop() {
       delay(5000); // TODO: 調整
       lidWireMotor.stop();
       delay(500);
-      //buttonBle->open(); // TODO:外す
+      buttonBle->open();
       state.id = STATE_COOKING;
       break;
     }
@@ -198,5 +215,5 @@ void loop() {
     }
   }
   M5.update();
-  delay(1000);
+  delay(100);
 }

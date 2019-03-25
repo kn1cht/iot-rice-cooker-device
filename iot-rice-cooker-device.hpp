@@ -19,8 +19,8 @@ static const uint8_t WATER_TANK_SENSOR_PIN = 19;
 static const uint8_t WASTE_TANK_SENSOR_PIN = 0;
 static const uint8_t PRESSURE_SENSOR_PIN = 26;
 /* actuators' pins */
-static const uint8_t LID_WIRE_MOTOR1_PIN = 22;
-static const uint8_t LID_WIRE_MOTOR2_PIN = 17;
+static const uint8_t LID_WIRE_MOTOR1_PIN = 17;
+static const uint8_t LID_WIRE_MOTOR2_PIN = 22;
 static const uint8_t RICE_DELIVERY_SERVO_PIN = 13;
 static const uint8_t RICE_WASHING_MOTOR_PIN = 1;
 static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5;
@@ -41,12 +41,20 @@ enum StateId {
   STATE_COMPLETE,
 };
 
+enum StateLifeCycle {
+  INIT_STATE,
+  MID_STATE,
+  EXIT_STATE,
+};
+
 struct State {
   StateId id = STATE_STANDBY;
+  StateLifeCycle lifeCycle = INIT_STATE;
   int amount = 0;
   bool water = true;
   bool waste = false;
-  double weight = 20;
+  double weight = 0;
+  double prevWeight = 0;
   double pressure = 0;
 };
 

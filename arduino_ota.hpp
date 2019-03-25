@@ -31,4 +31,5 @@ void otaSetup() {
     });
 
   ArduinoOTA.begin();
+  Serial.println("OTA initialized");
 }
