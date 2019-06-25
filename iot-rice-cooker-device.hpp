@@ -3,6 +3,8 @@
 
 #include <ESP32Servo.h>
 #include "web_client.hpp"
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
 
 static const int SERVO_MIN_US = 664;
 static const int SERVO_MAX_US = 2500;
@@ -19,14 +21,23 @@ static const uint8_t WATER_TANK_SENSOR_PIN = 19;
 static const uint8_t WASTE_TANK_SENSOR_PIN = 0;
 static const uint8_t PRESSURE_SENSOR_PIN = 26;
 /* actuators' pins */
-static const uint8_t LID_WIRE_MOTOR1_PIN = 22;
+static const uint8_t LID_WIRE_MOTOR1_PIN = 5; //22→5
 static const uint8_t LID_WIRE_MOTOR2_PIN = 17;
 static const uint8_t RICE_DELIVERY_SERVO_PIN = 13;
-static const uint8_t RICE_WASHING_MOTOR_PIN = 21;
-static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5;
+static const uint8_t RICE_WASHING_MOTOR_PIN = 25;//21→25
+//static const uint8_t RICE_WASHING_ROD_SERVO_PIN = 5; deleted
 static const uint8_t WATER_DELIVERY_PUMP_PIN = 2;
-static const uint8_t WATER_ROD_SERVO_PIN = 25;
+//static const uint8_t WATER_ROD_SERVO_PIN = 25; deleted
 static const uint8_t WATER_SUCTION_PUMP_PIN = 16;
+
+//used by servo driver
+static const int SERVO_MIN_US_DRIVER = 450;
+static const int SERVO_MAX_US_DRIVER = 2030;
+static const int SERVO_FREQ_DRIVER = 50;
+static const int SERVO_RESOlUTION_DRIVER = 4096;
+static const int CLOSER_SERVO_READY_ANGLE = 150;
+static const int CLOSER_SERVO_CLOSE_ANGLE = 50;
+static const int CLOSER_SERVO_NUM = 0;
 
 enum StateId {
   STATE_STANDBY,
@@ -74,5 +85,6 @@ class GearedMotor {
 String sendPutRequest(WebClient* client, String property, String value);
 
 void sweepServo(Servo& servo, int from, int to, double speedDps = 90);
+void sweepServoViaDriver(Adafruit_PWMServoDriver& pwm, int servoNum, int degree);
 
 #endif // IOT_RICE_COOKER_DEVICE_HPP

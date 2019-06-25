@@ -9,13 +9,14 @@
 State state;
 HX711 scale;
 
-GearedMotor lidWireMotor;
 GearedMotor riceWashingMotor;
 GearedMotor waterDeliveryPump;
 GearedMotor waterSuctionPump;
 Servo riceDeliveryServo;
-Servo riceWashingRodServo;
-Servo waterRodServo;
+// Servo riceWashingRodServo;
+//Servo waterRodServo;
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x72);
 
 WebClient* client;
 BleCentral* lidBle;
@@ -25,6 +26,9 @@ String res;
 
 void setup() {
   M5.begin(); // setup serial, etc.
+  delay(10);
+  pwm.begin();
+  pwm.setPWMFreq(SERVO_FREQ_DRIVER);
   delay(10);
   M5.Lcd.setFreeFont(&FreeMono9pt7b);
   M5.Lcd.setCursor(0,20);
@@ -39,19 +43,19 @@ void setup() {
   scale.set_scale(103.5f); // set unit scale
   /*** Actuators ***/
   M5.Lcd.println("Initializing Actuators...");
-  lidWireMotor.init(LID_WIRE_MOTOR1_PIN, LID_WIRE_MOTOR2_PIN);
-  riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
+  //riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
   waterDeliveryPump.init(WATER_DELIVERY_PUMP_PIN);
   waterSuctionPump.init(WATER_SUCTION_PUMP_PIN);
 	riceDeliveryServo.attach(RICE_DELIVERY_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
-	riceWashingRodServo.attach(RICE_WASHING_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
-	waterRodServo.attach(WATER_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+	// riceWashingRodServo.attach(RICE_WASHING_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+	//waterRodServo.attach(WATER_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+  sweepServoViaDriver(pwm, CLOSER_SERVO_NUM, CLOSER_SERVO_READY_ANGLE);
   M5.Lcd.println("Returning to Home Position");
   for(int c = 0; c < 100; c++) { // within 3 seconds
     if(c % 20 == 0) M5.Lcd.print(".");
     riceDeliveryServo.write(RICE_DELIVERY_HOME);
-    riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
-    waterRodServo.write(WATER_ROD_HOME);
+    // riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
+    //waterRodServo.write(WATER_ROD_HOME);
     delay(30);
   }
   M5.Lcd.println("Done");
@@ -107,9 +111,7 @@ void loop() {
     case STATE_OPENLID: {
       M5.Lcd.println("Opening Lid");
       lidBle->openForward(700);
-      lidWireMotor.reverse();
       delay(6000);
-      lidWireMotor.stop();
       lidBle->openReverse(700);
       state.id = STATE_POURWATER1;
       state.lifeCycle = INIT_STATE;
@@ -118,7 +120,7 @@ void loop() {
     case STATE_POURWATER1: {
       M5.Lcd.println("Pouring Water");
       if(state.lifeCycle == INIT_STATE) {
-        sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
+        //sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
         waterDeliveryPump.forward();
         state.prevWeight = state.weight;
         state.lifeCycle = MID_STATE;
@@ -130,7 +132,7 @@ void loop() {
         }
       }
       else if(state.lifeCycle == EXIT_STATE) {
-        sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        //sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
         state.id = STATE_DROPRICE;
         state.lifeCycle = INIT_STATE;
       }
@@ -149,17 +151,17 @@ void loop() {
     }
     case STATE_WASHRICE: {
       M5.Lcd.println("Washing Rice");
-      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
+      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
       riceWashingMotor.forward();
       delay(20000);
       riceWashingMotor.stop();
-      sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
+      // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
       state.id = STATE_SUCKWATER;
       break;
     }
     case STATE_SUCKWATER: {
       M5.Lcd.println("Sucking Water");
-      sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
+      //sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
       waterSuctionPump.forward();
       delay(60000 * state.amount);
       waterSuctionPump.stop();
@@ -181,7 +183,7 @@ void loop() {
         }
       }
       else if(state.lifeCycle == EXIT_STATE) {
-        sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        //sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
         state.id = STATE_CLOSELID;
         state.lifeCycle = INIT_STATE;
       }
@@ -189,13 +191,22 @@ void loop() {
     }
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
-      lidWireMotor.forward();
-      delay(9000);
-      lidBle->open(700);
-      delay(500);
-      lidWireMotor.stop();
-      delay(500);
-      buttonBle->open(600);
+      int i;
+      //READY_ANGLE to CLOSE_ANGLE
+      for(i=0;i<=CLOSER_SERVO_READY_ANGLE-CLOSER_SERVO_CLOSE_ANGLE;i++){
+        sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_READY_ANGLE-i);
+        delay(5);
+      }
+      //Repetition of CLOSE_ANGLE signal to ensure closing
+      for(i=0;i<100;i++){
+        sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_CLOSE_ANGLE);
+        delay(5);
+      }
+      //CLOSE_ANGLE to READY_ANGLE
+      for(i=0;i<=CLOSER_SERVO_READY_ANGLE-CLOSER_SERVO_CLOSE_ANGLE;i++){
+        sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_CLOSE_ANGLE+i);
+        delay(10);
+      }
       state.id = STATE_COOKING;
       break;
     }

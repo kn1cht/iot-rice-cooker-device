@@ -35,3 +35,11 @@ void sweepServo(Servo& servo, int from, int to, double speedDps) {
     delay(20);
   }
 }
+void sweepServoViaDriver(Adafruit_PWMServoDriver& pwm, int servoNum, int degree){
+  double pulse_us;
+  uint16_t pulse_len; //out of 4096
+  pulse_us=map(degree, 0, 180, SERVO_MIN_US, SERVO_MAX_US);
+  pulse_len=floor(pulse_us/(1000000/(SERVO_FREQ_DRIVER*SERVO_RESOlUTION_DRIVER*1.0)));
+  //M5.Lcd.println(String(degree)+"deg, "+String(pulse_us)+"us, "+String(pulse_len)+"/4096");
+  pwm.setPWM(servoNum, 0, pulse_len);
+}
