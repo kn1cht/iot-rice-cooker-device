@@ -10,8 +10,6 @@ static const int SERVO_MIN_US = 664;
 static const int SERVO_MAX_US = 2500;
 static const uint8_t RICE_DELIVERY_HOME = 0;
 static const uint8_t RICE_DELIVERY_DROP = 180;
-static const uint8_t RICE_WASHING_ROD_HOME = 0;
-static const uint8_t RICE_WASHING_ROD_DOWN = 120;
 static const uint8_t WATER_ROD_HOME = 180;
 static const uint8_t WATER_ROD_DOWN = 45;
 /* sensors' pins */
@@ -38,6 +36,9 @@ static const int SERVO_RESOlUTION_DRIVER = 4096;
 static const int CLOSER_SERVO_READY_ANGLE = 150;
 static const int CLOSER_SERVO_CLOSE_ANGLE = 50;
 static const int CLOSER_SERVO_NUM = 0;
+static const int RICE_WASHING_SERVO_READY_ANGLE = 30;
+static const int RICE_WASHING_SERVO_DOWN_ANGLE = 140;
+static const int RICE_WASHING_SERVO_NUM = 1;
 
 enum StateId {
   STATE_STANDBY,

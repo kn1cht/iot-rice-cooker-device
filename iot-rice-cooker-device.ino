@@ -43,19 +43,21 @@ void setup() {
   scale.set_scale(103.5f); // set unit scale
   /*** Actuators ***/
   M5.Lcd.println("Initializing Actuators...");
-  //riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
+  riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
   waterDeliveryPump.init(WATER_DELIVERY_PUMP_PIN);
   waterSuctionPump.init(WATER_SUCTION_PUMP_PIN);
 	riceDeliveryServo.attach(RICE_DELIVERY_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
 	// riceWashingRodServo.attach(RICE_WASHING_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+
 	//waterRodServo.attach(WATER_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
-  sweepServoViaDriver(pwm, CLOSER_SERVO_NUM, CLOSER_SERVO_READY_ANGLE);
   M5.Lcd.println("Returning to Home Position");
   for(int c = 0; c < 100; c++) { // within 3 seconds
     if(c % 20 == 0) M5.Lcd.print(".");
     riceDeliveryServo.write(RICE_DELIVERY_HOME);
     // riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
+    sweepServoViaDriver(pwm, RICE_WASHING_SERVO_NUM, RICE_WASHING_SERVO_READY_ANGLE);
     //waterRodServo.write(WATER_ROD_HOME);
+    sweepServoViaDriver(pwm, CLOSER_SERVO_NUM, CLOSER_SERVO_READY_ANGLE);
     delay(30);
   }
   M5.Lcd.println("Done");
@@ -72,6 +74,7 @@ void setup() {
 }
 
 void loop() {
+  int i;
   M5.Lcd.clear();
   M5.Lcd.setCursor(0,20);
 
@@ -152,10 +155,18 @@ void loop() {
     case STATE_WASHRICE: {
       M5.Lcd.println("Washing Rice");
       // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_HOME, RICE_WASHING_ROD_DOWN);
+      for(i=0;i<=RICE_WASHING_SERVO_DOWN_ANGLE-RICE_WASHING_SERVO_READY_ANGLE;i++){
+        sweepServoViaDriver(pwm, RICE_WASHING_SERVO_NUM, RICE_WASHING_SERVO_READY_ANGLE+i);
+        delay(10);
+      }
       riceWashingMotor.forward();
       delay(20000);
       riceWashingMotor.stop();
       // sweepServo(riceWashingRodServo, RICE_WASHING_ROD_DOWN, RICE_WASHING_ROD_HOME);
+      for(i=0;i<=RICE_WASHING_SERVO_DOWN_ANGLE-RICE_WASHING_SERVO_READY_ANGLE;i++){
+        sweepServoViaDriver(pwm, RICE_WASHING_SERVO_NUM, RICE_WASHING_SERVO_DOWN_ANGLE-i);
+        delay(10);
+      }
       state.id = STATE_SUCKWATER;
       break;
     }
@@ -191,7 +202,7 @@ void loop() {
     }
     case STATE_CLOSELID: {
       M5.Lcd.println("Closing Lid");
-      int i;
+
       //READY_ANGLE to CLOSE_ANGLE
       for(i=0;i<=CLOSER_SERVO_READY_ANGLE-CLOSER_SERVO_CLOSE_ANGLE;i++){
         sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_READY_ANGLE-i);
