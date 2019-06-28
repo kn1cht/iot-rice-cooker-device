@@ -39,6 +39,9 @@ static const int CLOSER_SERVO_NUM = 0;
 static const int RICE_WASHING_SERVO_READY_ANGLE = 30;
 static const int RICE_WASHING_SERVO_DOWN_ANGLE = 140;
 static const int RICE_WASHING_SERVO_NUM = 1;
+static const int WARTER_SERVO_READY_ANGLE = 180;
+static const int WARTER_SERVO_DOWN_ANGLE = 75;
+static const int WARETR_SERVO_NUM = 2;
 
 enum StateId {
   STATE_STANDBY,

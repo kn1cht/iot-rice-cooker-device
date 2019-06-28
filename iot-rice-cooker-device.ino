@@ -57,6 +57,7 @@ void setup() {
     // riceWashingRodServo.write(RICE_WASHING_ROD_HOME);
     sweepServoViaDriver(pwm, RICE_WASHING_SERVO_NUM, RICE_WASHING_SERVO_READY_ANGLE);
     //waterRodServo.write(WATER_ROD_HOME);
+    sweepServoViaDriver(pwm, WARETR_SERVO_NUM, WARTER_SERVO_READY_ANGLE);
     sweepServoViaDriver(pwm, CLOSER_SERVO_NUM, CLOSER_SERVO_READY_ANGLE);
     delay(30);
   }
@@ -124,6 +125,10 @@ void loop() {
       M5.Lcd.println("Pouring Water");
       if(state.lifeCycle == INIT_STATE) {
         //sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
+        for(i=0;i<=WARTER_SERVO_READY_ANGLE-WARTER_SERVO_DOWN_ANGLE;i++){
+          sweepServoViaDriver(pwm,WARETR_SERVO_NUM,WARTER_SERVO_READY_ANGLE-i);
+          delay(10);
+        }
         waterDeliveryPump.forward();
         state.prevWeight = state.weight;
         state.lifeCycle = MID_STATE;
@@ -136,6 +141,10 @@ void loop() {
       }
       else if(state.lifeCycle == EXIT_STATE) {
         //sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        for(i=0;i<=WARTER_SERVO_READY_ANGLE-WARTER_SERVO_DOWN_ANGLE;i++){
+          sweepServoViaDriver(pwm, WARETR_SERVO_NUM ,WARTER_SERVO_DOWN_ANGLE+i);
+          delay(10);
+        }
         state.id = STATE_DROPRICE;
         state.lifeCycle = INIT_STATE;
       }
@@ -173,6 +182,10 @@ void loop() {
     case STATE_SUCKWATER: {
       M5.Lcd.println("Sucking Water");
       //sweepServo(waterRodServo, WATER_ROD_HOME, WATER_ROD_DOWN);
+      for(i=0;i<=WARTER_SERVO_READY_ANGLE-WARTER_SERVO_DOWN_ANGLE;i++){
+        sweepServoViaDriver(pwm,WARETR_SERVO_NUM,WARTER_SERVO_READY_ANGLE-i);
+        delay(10);
+      }
       waterSuctionPump.forward();
       delay(60000 * state.amount);
       waterSuctionPump.stop();
@@ -195,6 +208,10 @@ void loop() {
       }
       else if(state.lifeCycle == EXIT_STATE) {
         //sweepServo(waterRodServo, WATER_ROD_DOWN, WATER_ROD_HOME);
+        for(i=0;i<=WARTER_SERVO_READY_ANGLE-WARTER_SERVO_DOWN_ANGLE;i++){
+          sweepServoViaDriver(pwm, WARETR_SERVO_NUM ,WARTER_SERVO_DOWN_ANGLE+i);
+          delay(10);
+        }
         state.id = STATE_CLOSELID;
         state.lifeCycle = INIT_STATE;
       }
