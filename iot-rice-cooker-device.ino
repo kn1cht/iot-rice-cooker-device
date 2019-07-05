@@ -223,12 +223,12 @@ void loop() {
       //READY_ANGLE to CLOSE_ANGLE
       for(i=0;i<=CLOSER_SERVO_READY_ANGLE-CLOSER_SERVO_CLOSE_ANGLE;i++){
         sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_READY_ANGLE-i);
-        delay(5);
+        delay(2);
       }
       //Repetition of CLOSE_ANGLE signal to ensure closing
       for(i=0;i<100;i++){
         sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_CLOSE_ANGLE);
-        delay(5);
+        delay(2);
       }
       //CLOSE_ANGLE to READY_ANGLE
       for(i=0;i<=CLOSER_SERVO_READY_ANGLE-CLOSER_SERVO_CLOSE_ANGLE;i++){
