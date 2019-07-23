@@ -17,7 +17,7 @@ static const uint8_t LOAD_CELL_DOUT_PIN = 15;
 static const uint8_t LOAD_CELL_SCK_PIN  = 12;
 static const uint8_t WATER_TANK_SENSOR_PIN = 19;
 static const uint8_t WASTE_TANK_SENSOR_PIN = 0;
-static const uint8_t PRESSURE_SENSOR_PIN = 26;
+// static const uint8_t PRESSURE_SENSOR_PIN = 26;
 /* actuators' pins */
 static const uint8_t LID_WIRE_MOTOR1_PIN = 5; //22→5
 static const uint8_t LID_WIRE_MOTOR2_PIN = 17;
@@ -42,6 +42,9 @@ static const int RICE_WASHING_SERVO_NUM = 1;
 static const int WARTER_SERVO_READY_ANGLE = 180;
 static const int WARTER_SERVO_DOWN_ANGLE = 75;
 static const int WARETR_SERVO_NUM = 2;
+
+//the threshold of rice shortage sensor
+static const int RICE_SHORTAGE = 2270;
 
 enum StateId {
   STATE_STANDBY,
@@ -71,6 +74,7 @@ struct State {
   double weight = 0;
   double prevWeight = 0;
   double pressure = 0;
+  bool isRiceShortage = false;
 };
 
 class GearedMotor {

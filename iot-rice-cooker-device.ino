@@ -5,6 +5,7 @@
 #include "web_client.hpp"
 #include "wifi_handler.hpp"
 #include "ble_central.hpp"
+#include "Adafruit_VCNL4010.h"
 
 State state;
 HX711 scale;
@@ -21,6 +22,8 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x72);
 WebClient* client;
 BleCentral* lidBle;
 BleCentral* buttonBle;
+
+Adafruit_VCNL4010 riceShortageSensor;
 
 String res;
 
@@ -41,12 +44,22 @@ void setup() {
   scale.begin(LOAD_CELL_DOUT_PIN, LOAD_CELL_SCK_PIN);
   scale.tare(10); // set offset
   scale.set_scale(103.5f); // set unit scale
+  //make connection to rice shortage sensor
+  while(!riceShortageSensor.begin()){
+      M5.Lcd.println("The rice shortage sensor isn't connected...");
+      M5.Lcd.print("Trying to reconnect after 3sec");
+      for(int i=0;i<3;i++){
+          M5.Lcd.print(".");
+          delay(1000);
+      }
+      M5.Lcd.println("");
+  }
   /*** Actuators ***/
   M5.Lcd.println("Initializing Actuators...");
   riceWashingMotor.init(RICE_WASHING_MOTOR_PIN);
   waterDeliveryPump.init(WATER_DELIVERY_PUMP_PIN);
   waterSuctionPump.init(WATER_SUCTION_PUMP_PIN);
-	riceDeliveryServo.attach(RICE_DELIVERY_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
+  riceDeliveryServo.attach(RICE_DELIVERY_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
 	// riceWashingRodServo.attach(RICE_WASHING_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
 
 	//waterRodServo.attach(WATER_ROD_SERVO_PIN, SERVO_MIN_US, SERVO_MAX_US);
@@ -86,11 +99,18 @@ void loop() {
   M5.Lcd.println("water    : " + String(state.water));
   state.waste = digitalRead(WASTE_TANK_SENSOR_PIN); // 1: water full alert
   M5.Lcd.println("waste    : " + String(state.waste));
-  state.pressure = analogRead(PRESSURE_SENSOR_PIN) * 3.6 / 4096;
-  M5.Lcd.println("pressure : " + String(state.pressure));
+  // state.pressure = analogRead(PRESSURE_SENSOR_PIN) * 3.6 / 4096;
+  // M5.Lcd.println("pressure : " + String(state.pressure));
+  state.isRiceShortage = (riceShortageSensor.readProximity() < RICE_SHORTAGE);
+  if(state.isRiceShortage)M5.Lcd.println("Rice: Shortage");
+  else M5.Lcd.println("Rice: Enough Stock");
 
   if(state.id == STATE_STANDBY || state.id == STATE_COMPLETE) {
     res = sendPutRequest(client, "weight", String(state.weight));
+    res = sendPutRequest(client, "water", String((int)state.water));
+    res = sendPutRequest(client, "waste", String((int)state.waste));
+    res = sendPutRequest(client, "water", String((int)state.water));
+    res = sendPutRequest(client, "isRiceShortage", String((int)state.isRiceShortage));
   }
 
   if(M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) {
