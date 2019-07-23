@@ -109,7 +109,6 @@ void loop() {
     res = sendPutRequest(client, "weight", String(state.weight));
     res = sendPutRequest(client, "water", String((int)state.water));
     res = sendPutRequest(client, "waste", String((int)state.waste));
-    res = sendPutRequest(client, "water", String((int)state.water));
     res = sendPutRequest(client, "isRiceShortage", String((int)state.isRiceShortage));
   }
 
