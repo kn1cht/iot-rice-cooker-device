@@ -122,8 +122,8 @@ void loop() {
     case STATE_STANDBY: {
       M5.Lcd.println("Standby");
       if(state.weight >= 30) state.id = STATE_COMPLETE;
-      state.amount = client->get_request("/api/cookers/0/amount").toInt();
-      M5.Lcd.println("amount: " + state.amount);
+      state.amount = client->get_request("/api/cookers/0/amount").toFloat();
+      M5.Lcd.println("amount: " + String(state.amount));
       if(state.amount > 0) {
         state.id = STATE_OPENLID;
         res = sendPutRequest(client, "active", "1");
@@ -134,7 +134,7 @@ void loop() {
     case STATE_OPENLID: {
       M5.Lcd.println("Opening Lid");
       lidBle->openForward(700);
-      delay(6000);
+      delay(1000);
       lidBle->openReverse(700);
       state.id = STATE_POURWATER1;
       state.lifeCycle = INIT_STATE;
@@ -148,13 +148,14 @@ void loop() {
           sweepServoViaDriver(pwm,WARETR_SERVO_NUM,WARTER_SERVO_READY_ANGLE-i);
           delay(10);
         }
-        waterDeliveryPump.forward();
         state.prevWeight = state.weight;
+        waterDeliveryPump.forward();
         state.lifeCycle = MID_STATE;
       }
       else if(state.lifeCycle == MID_STATE) {
         if(state.weight - state.prevWeight >= 180 * state.amount) {
           waterDeliveryPump.stop();
+          state.targetWeight2ndPouring = scale.get_units(10);
           state.lifeCycle = EXIT_STATE;
         }
       }
@@ -171,11 +172,11 @@ void loop() {
     }
     case STATE_DROPRICE: {
       M5.Lcd.println("Dropping Rice");
-      for(int c = 0; c <= state.amount * 4; c++) {
+      for(int c = 0; c < state.amount * 4; c++) {
         sweepServo(riceDeliveryServo, RICE_DELIVERY_HOME, RICE_DELIVERY_DROP);
-        delay(500);
+        delay(2000);
         sweepServo(riceDeliveryServo, RICE_DELIVERY_DROP, RICE_DELIVERY_HOME);
-        delay(500);
+        delay(2000);
       }
       state.id = STATE_WASHRICE;
       break;
@@ -216,11 +217,10 @@ void loop() {
       M5.Lcd.println("Pouring Wator");
       if(state.lifeCycle == INIT_STATE) {
         waterDeliveryPump.forward();
-        state.prevWeight = state.weight;
           state.lifeCycle = MID_STATE;
       }
       else if(state.lifeCycle == MID_STATE) {
-        if(state.weight - state.prevWeight >= 180 * state.amount) {
+        if(state.weight >= state.targetWeight2ndPouring ) {
           waterDeliveryPump.stop();
           state.lifeCycle = EXIT_STATE;
         }
@@ -254,6 +254,9 @@ void loop() {
         sweepServoViaDriver(pwm,CLOSER_SERVO_NUM,CLOSER_SERVO_CLOSE_ANGLE+i);
         delay(10);
       }
+      buttonBle->openForward(700);
+      delay(1000);
+      buttonBle->openReverse(700);
       state.id = STATE_COOKING;
       break;
     }

@@ -36,11 +36,11 @@ static const int SERVO_RESOlUTION_DRIVER = 4096;
 static const int CLOSER_SERVO_READY_ANGLE = 150;
 static const int CLOSER_SERVO_CLOSE_ANGLE = 50;
 static const int CLOSER_SERVO_NUM = 0;
-static const int RICE_WASHING_SERVO_READY_ANGLE = 30;
-static const int RICE_WASHING_SERVO_DOWN_ANGLE = 140;
+static const int RICE_WASHING_SERVO_READY_ANGLE = 0;
+static const int RICE_WASHING_SERVO_DOWN_ANGLE = 110;
 static const int RICE_WASHING_SERVO_NUM = 1;
-static const int WARTER_SERVO_READY_ANGLE = 180;
-static const int WARTER_SERVO_DOWN_ANGLE = 75;
+static const int WARTER_SERVO_READY_ANGLE = 150;
+static const int WARTER_SERVO_DOWN_ANGLE = 40;
 static const int WARETR_SERVO_NUM = 2;
 
 //the threshold of rice shortage sensor
@@ -68,12 +68,12 @@ enum StateLifeCycle {
 struct State {
   StateId id = STATE_STANDBY;
   StateLifeCycle lifeCycle = INIT_STATE;
-  int amount = 0;
+  float amount = 0;
   bool water = true;
   bool waste = false;
   double weight = 0;
   double prevWeight = 0;
-  double pressure = 0;
+  double targetWeight2ndPouring = 0;
   bool isRiceShortage = false;
 };
 
